@@ -34,13 +34,14 @@ func (h *AuthHandler) GoogleCallback(c *gin.Context) {
 	q := c.Request.URL.Query()
 	q.Add("provider", "google")
 	c.Request.URL.RawQuery = q.Encode()
-
+	
 	gothUser, err := gothic.CompleteUserAuth(c.Writer, c.Request)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to authenticate with Google"})
+		fmt.Printf("Google OAuth error: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to authenticate with Google", "details": err.Error()})
 		return
 	}
-
+	
 	h.handleOAuthCallback(c, gothUser.Email, gothUser.Name, gothUser.AvatarURL, "google", gothUser.UserID)
 }
 

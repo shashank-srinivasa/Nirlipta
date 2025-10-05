@@ -18,11 +18,17 @@ const (
 
 // InitOAuth initializes OAuth providers (Google, Facebook)
 func InitOAuth() {
-	store := sessions.NewCookieStore([]byte(os.Getenv("JWT_SECRET")))
+	key := os.Getenv("JWT_SECRET")
+	if key == "" {
+		key = "default-secret-key-change-in-production"
+	}
+
+	store := sessions.NewCookieStore([]byte(key))
 	store.MaxAge(maxAge)
 	store.Options.Path = "/"
 	store.Options.HttpOnly = true
 	store.Options.Secure = isProd
+	store.Options.SameSite = 0 // Allow cross-site for localhost development
 
 	gothic.Store = store
 
