@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FaEdit, FaCalendarPlus, FaUsers, FaChartLine } from 'react-icons/fa';
+import { FaEdit, FaCalendarPlus, FaUsers, FaChartLine, FaChalkboardTeacher } from 'react-icons/fa';
 import ClassManagement from './admin/ClassManagement';
 import ScheduleManagement from './admin/ScheduleManagement';
 import ContentEditor from './admin/ContentEditor';
 import UserManagement from './admin/UserManagement';
+import InstructorManagement from './admin/InstructorManagement';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -13,6 +14,7 @@ const AdminDashboard = () => {
     { id: 'overview', label: 'Overview', icon: <FaChartLine /> },
     { id: 'classes', label: 'Classes', icon: <FaEdit /> },
     { id: 'schedule', label: 'Schedule', icon: <FaCalendarPlus /> },
+    { id: 'instructors', label: 'Instructors', icon: <FaChalkboardTeacher /> },
     { id: 'content', label: 'Content', icon: <FaEdit /> },
     { id: 'users', label: 'Users', icon: <FaUsers /> },
   ];
@@ -82,6 +84,10 @@ const AdminDashboard = () => {
 
               {activeTab === 'schedule' && (
                 <ScheduleManagement />
+              )}
+
+              {activeTab === 'instructors' && (
+                <InstructorManagement />
               )}
 
               {activeTab === 'content' && (

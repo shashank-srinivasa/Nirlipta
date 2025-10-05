@@ -80,6 +80,30 @@ export const contentAPI = {
   getByPage: (page) => api.get(`/content/${page}`),
 };
 
+// User endpoints
+export const userAPI = {
+  getProfile: () => api.get('/users/me'),
+  updateProfile: (data) => api.put('/users/me', data),
+  uploadAvatar: (file) => {
+    const formData = new FormData();
+    formData.append('profile_picture', file);
+    return api.post('/users/me/avatar', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  },
+  updateInstructorBio: (data) => api.put('/users/me/instructor-bio', data),
+};
+
+// Instructor endpoints
+export const instructorAPI = {
+  getAll: () => api.get('/instructors'),
+  getAllAdmin: () => api.get('/admin/instructors'),
+  update: (id, data) => api.put(`/admin/instructors/${id}`, data),
+  updateOrder: (id, order) => api.put(`/admin/instructors/${id}/order`, { order }),
+  promote: (id) => api.put(`/admin/instructors/${id}/promote`),
+  remove: (id) => api.delete(`/admin/instructors/${id}`),
+};
+
 // Admin endpoints
 export const adminAPI = {
   // Classes management
