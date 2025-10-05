@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FaEnvelope, FaCalendarCheck, FaHistory, FaCamera, FaEdit } from 'react-icons/fa';
+import { FaCamera } from 'react-icons/fa';
 import useAuthStore from '../store/authStore';
 import { userAPI, enrollmentAPI } from '../services/api';
+import { format, parseISO } from 'date-fns';
 
 const Profile = () => {
   const { user, isAuthenticated, updateUser } = useAuthStore();
@@ -51,7 +52,7 @@ const Profile = () => {
     try {
       const response = await userAPI.uploadAvatar(file);
       updateUser({ avatar_url: response.data.avatar_url });
-      alert('✅ Profile picture updated!');
+      alert('Profile picture updated!');
     } catch (err) {
       alert('Failed to upload image');
     } finally {
@@ -59,272 +60,236 @@ const Profile = () => {
     }
   };
 
-  const handleBioUpdate = async (e) => {
-    e.preventDefault();
+  const handleSaveBio = async () => {
     try {
-      await userAPI.updateInstructorBio(bioData);
-      updateUser({
-        instructor_bio: bioData.instructor_bio,
-        instructor_specialties: bioData.instructor_specialties,
-        years_experience: bioData.years_experience,
-      });
+      const response = await userAPI.updateInstructorBio(bioData);
+      updateUser(response.data);
       setShowBioEditor(false);
-      alert('✅ Bio updated!');
+      alert('Bio updated successfully!');
     } catch (err) {
       alert('Failed to update bio');
     }
   };
 
   const handleCancelEnrollment = async (enrollmentId) => {
-    if (!confirm('Cancel this enrollment?')) return;
-    
-    try {
-      await enrollmentAPI.cancel(enrollmentId);
-      fetchEnrollments();
-      alert('✅ Enrollment cancelled');
-    } catch (err) {
-      alert('Failed to cancel enrollment');
+    if (window.confirm('Are you sure you want to cancel this enrollment?')) {
+      try {
+        await enrollmentAPI.cancel(enrollmentId);
+        alert('Enrollment cancelled successfully!');
+        fetchEnrollments();
+      } catch (err) {
+        alert('Failed to cancel enrollment');
+      }
     }
   };
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="card max-w-md text-center">
-          <h2 className="text-2xl font-heading font-bold mb-4">Sign In Required</h2>
-          <p className="text-gray-600 mb-6">Please sign in to view your profile.</p>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="max-w-md text-center px-8">
+          <h2 className="text-h2 font-heading text-primary-900 mb-6">Sign In Required</h2>
+          <p className="text-body text-primary-600 mb-8">Please sign in to view your profile.</p>
+          <button 
+            onClick={() => window.location.href = '/api/v1/auth/google'} 
+            className="btn-primary"
+          >
+            Sign In
+          </button>
         </div>
       </div>
     );
   }
 
-  const upcomingEnrollments = enrollments.filter(e => 
-    new Date(e.schedule?.start_time) > new Date()
-  );
-
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-white py-20">
+      <div className="max-w-6xl mx-auto px-8 lg:px-16">
+        {/* Profile Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
+          className="mb-16"
         >
-          {/* Profile Header */}
-          <div className="card mb-8">
-            <div className="flex items-center gap-6">
-              {/* Avatar with Upload */}
-              <div className="relative">
-                {user?.avatar_url ? (
-                  <img
-                    src={`http://localhost:8080${user.avatar_url}`}
-                    alt={user.name}
-                    className="w-24 h-24 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center text-4xl">
-                    👤
-                  </div>
-                )}
-
-                {/* Upload Button */}
-                <label className="absolute bottom-0 right-0 bg-primary-600 text-white p-2 rounded-full cursor-pointer hover:bg-primary-700 transition-colors">
-                  <FaCamera />
+          <div className="flex flex-col md:flex-row items-start gap-8 pb-12 border-b border-primary-200">
+            {/* Avatar */}
+            <div className="relative">
+              <div className="w-32 h-32 relative">
+                <img
+                  src={user?.avatar_url ? `http://localhost:8080${user.avatar_url}` : '/default-avatar.png'}
+                  alt={user?.name || 'User Avatar'}
+                  className="w-full h-full object-cover"
+                />
+                <label className="absolute bottom-0 right-0 bg-primary-900 text-white p-3 cursor-pointer hover:bg-primary-800 transition-colors">
+                  <FaCamera className="text-sm" />
                   <input
                     type="file"
                     accept="image/*"
                     onChange={handleImageUpload}
                     className="hidden"
+                    disabled={uploading}
                   />
                 </label>
-
-                {uploading && (
-                  <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
-                    <div className="text-white text-xs">Uploading...</div>
-                  </div>
-                )}
               </div>
+              {uploading && (
+                <p className="text-xs text-primary-600 mt-2">Uploading...</p>
+              )}
+            </div>
 
-              <div className="flex-1">
-                <h1 className="text-3xl font-heading font-bold text-gray-900 mb-2">
-                  {user?.name}
-                </h1>
-                <div className="flex items-center text-gray-600 mb-2">
-                  <FaEnvelope className="mr-2" />
-                  <span>{user?.email}</span>
-                </div>
-                {user?.is_instructor && (
-                  <span className="inline-block bg-purple-100 text-purple-700 text-xs px-3 py-1 rounded-full font-medium">
-                    Instructor
-                  </span>
-                )}
-              </div>
+            {/* Info */}
+            <div className="flex-1">
+              <h1 className="text-h2 font-heading text-primary-900 mb-3">
+                {user?.name || 'Your Name'}
+              </h1>
+              <p className="text-body text-primary-600 mb-4">
+                {user?.email || 'email@example.com'}
+              </p>
+              {user?.is_instructor && (
+                <span className="inline-block text-xs tracking-wider uppercase text-primary-700 border-b border-primary-300">
+                  Instructor
+                </span>
+              )}
             </div>
           </div>
+        </motion.div>
 
-          {/* Instructor Bio Editor */}
-          {user?.is_instructor && (
-            <div className="card mb-8">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-heading font-bold text-gray-900">
-                  Instructor Profile
-                </h2>
+        {/* Instructor Bio Editor */}
+        {user?.is_instructor && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="mb-16"
+          >
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-h3 font-heading text-primary-900">
+                Instructor Profile
+              </h2>
+              {!showBioEditor ? (
                 <button
-                  onClick={() => setShowBioEditor(!showBioEditor)}
-                  className="btn-outline text-sm flex items-center gap-2"
+                  onClick={() => setShowBioEditor(true)}
+                  className="btn-outline text-sm py-2 px-6"
                 >
-                  <FaEdit />
-                  {showBioEditor ? 'Cancel' : 'Edit Bio'}
+                  Edit
                 </button>
-              </div>
-
-              {showBioEditor ? (
-                <form onSubmit={handleBioUpdate} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Bio
-                    </label>
-                    <textarea
-                      value={bioData.instructor_bio}
-                      onChange={(e) => setBioData({...bioData, instructor_bio: e.target.value})}
-                      rows="4"
-                      className="input-field"
-                      placeholder="Tell students about yourself..."
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Specialties (comma-separated)
-                    </label>
-                    <input
-                      type="text"
-                      value={bioData.instructor_specialties.join(', ')}
-                      onChange={(e) => setBioData({
-                        ...bioData,
-                        instructor_specialties: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
-                      })}
-                      className="input-field"
-                      placeholder="Vinyasa, Hatha, Meditation"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Years of Experience
-                    </label>
-                    <input
-                      type="number"
-                      value={bioData.years_experience}
-                      onChange={(e) => setBioData({...bioData, years_experience: parseInt(e.target.value) || 0})}
-                      min="0"
-                      className="input-field"
-                    />
-                  </div>
-
-                  <button type="submit" className="btn-primary">
-                    Save Changes
-                  </button>
-                </form>
               ) : (
-                <div>
-                  {user.instructor_bio ? (
-                    <p className="text-gray-700 mb-4">{user.instructor_bio}</p>
-                  ) : (
-                    <p className="text-gray-500 italic mb-4">No bio added yet</p>
-                  )}
-
-                  {user.instructor_specialties && user.instructor_specialties.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {user.instructor_specialties.map((specialty, idx) => (
-                        <span
-                          key={idx}
-                          className="text-sm px-3 py-1 bg-primary-100 text-primary-700 rounded-full"
-                        >
-                          {specialty}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {user.years_experience > 0 && (
-                    <p className="text-sm text-gray-600">
-                      {user.years_experience} years of experience
-                    </p>
-                  )}
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => setShowBioEditor(false)}
+                    className="btn-outline text-sm py-2 px-6"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSaveBio}
+                    className="btn-primary text-sm py-2 px-6"
+                  >
+                    Save
+                  </button>
                 </div>
               )}
             </div>
-          )}
 
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Upcoming Classes */}
-            <div className="card">
-              <div className="flex items-center mb-6">
-                <FaCalendarCheck className="text-2xl text-primary-600 mr-3" />
-                <h2 className="text-2xl font-heading font-bold text-gray-900">
-                  Upcoming Classes
-                </h2>
+            {showBioEditor ? (
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm tracking-wider uppercase text-primary-700 mb-3">
+                    Biography
+                  </label>
+                  <textarea
+                    value={bioData.instructor_bio}
+                    onChange={(e) => setBioData({ ...bioData, instructor_bio: e.target.value })}
+                    rows="6"
+                    className="input-field"
+                    placeholder="Share your yoga journey..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm tracking-wider uppercase text-primary-700 mb-3">
+                    Specialties (comma-separated)
+                  </label>
+                  <input
+                    type="text"
+                    value={bioData.instructor_specialties.join(', ')}
+                    onChange={(e) => setBioData({ ...bioData, instructor_specialties: e.target.value.split(',').map(s => s.trim()) })}
+                    className="input-field"
+                    placeholder="Vinyasa, Hatha, Meditation"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm tracking-wider uppercase text-primary-700 mb-3">
+                    Years of Experience
+                  </label>
+                  <input
+                    type="number"
+                    value={bioData.years_experience}
+                    onChange={(e) => setBioData({ ...bioData, years_experience: parseInt(e.target.value) || 0 })}
+                    className="input-field"
+                    min="0"
+                  />
+                </div>
               </div>
-              <div className="space-y-4">
-                {upcomingEnrollments.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">
-                    No upcoming classes. Enroll in a class from the schedule!
-                  </p>
-                ) : (
-                  upcomingEnrollments.map((enrollment) => (
-                    <div
-                      key={enrollment.id}
-                      className="p-4 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors"
-                    >
-                      <h3 className="font-semibold text-gray-900 mb-1">
-                        {enrollment.schedule?.class?.title}
+            ) : (
+              <div className="space-y-6 text-primary-600">
+                <div>
+                  <h4 className="text-sm tracking-wider uppercase text-primary-700 mb-2">Biography</h4>
+                  <p className="text-body leading-relaxed">{user?.instructor_bio || 'No bio yet.'}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm tracking-wider uppercase text-primary-700 mb-2">Specialties</h4>
+                  <p className="text-body">{user?.instructor_specialties?.join(', ') || 'None specified.'}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm tracking-wider uppercase text-primary-700 mb-2">Experience</h4>
+                  <p className="text-body">{user?.years_experience || '0'} years</p>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {/* Enrollments */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
+          <h2 className="text-h3 font-heading text-primary-900 mb-8">
+            My Enrollments
+          </h2>
+
+          {enrollments.length === 0 ? (
+            <p className="text-body text-primary-600">You haven't enrolled in any classes yet.</p>
+          ) : (
+            <div className="space-y-4">
+              {enrollments.map((enrollment) => (
+                <div
+                  key={enrollment.id}
+                  className="border border-primary-200 p-6 hover:border-primary-400 transition-all"
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="text-xl font-heading text-primary-900 mb-2">
+                        {enrollment.Schedule.Class.title}
                       </h3>
-                      <p className="text-sm text-gray-600 mb-2">
-                        {new Date(enrollment.schedule?.start_time).toLocaleString()}
+                      <p className="text-body text-primary-600 mb-2">
+                        {format(parseISO(enrollment.Schedule.start_time), 'EEEE, MMMM d')} at{' '}
+                        {format(parseISO(enrollment.Schedule.start_time), 'h:mm a')}
                       </p>
-                      <button
-                        onClick={() => handleCancelEnrollment(enrollment.id)}
-                        className="text-sm text-red-600 hover:text-red-700"
-                      >
-                        Cancel Enrollment
-                      </button>
+                      <p className="text-sm text-primary-500">
+                        Instructor: {enrollment.Schedule.Class.instructor_name}
+                      </p>
                     </div>
-                  ))
-                )}
-              </div>
+                    <button
+                      onClick={() => handleCancelEnrollment(enrollment.id)}
+                      className="text-sm text-red-600 hover:text-red-700 tracking-wider uppercase"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
-
-            {/* Class History */}
-            <div className="card">
-              <div className="flex items-center mb-6">
-                <FaHistory className="text-2xl text-secondary-600 mr-3" />
-                <h2 className="text-2xl font-heading font-bold text-gray-900">
-                  Class History
-                </h2>
-              </div>
-              <div className="space-y-4">
-                {enrollments.filter(e => new Date(e.schedule?.start_time) <= new Date()).length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">
-                    No completed classes yet
-                  </p>
-                ) : (
-                  enrollments
-                    .filter(e => new Date(e.schedule?.start_time) <= new Date())
-                    .map((enrollment) => (
-                      <div key={enrollment.id} className="p-4 bg-gray-50 rounded-lg">
-                        <h3 className="font-semibold text-gray-900 mb-1">
-                          {enrollment.schedule?.class?.title}
-                        </h3>
-                        <p className="text-sm text-gray-600">
-                          Completed on {new Date(enrollment.schedule?.start_time).toLocaleDateString()}
-                        </p>
-                      </div>
-                    ))
-                )}
-              </div>
-            </div>
-          </div>
+          )}
         </motion.div>
       </div>
     </div>

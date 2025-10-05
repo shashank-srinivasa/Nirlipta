@@ -57,9 +57,7 @@ const Landing = () => {
               transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
               className="relative h-[600px] hidden lg:block"
             >
-              <div className="absolute inset-0 bg-primary-100 flex items-center justify-center">
-                <span className="text-9xl opacity-20">🧘‍♀️</span>
-              </div>
+              <div className="absolute inset-0 bg-gradient-to-br from-primary-100 to-accent-100"></div>
             </motion.div>
           </div>
         </div>
