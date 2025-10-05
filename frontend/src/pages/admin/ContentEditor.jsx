@@ -12,25 +12,18 @@ const ContentEditor = () => {
     'landing-cta': 'View Schedule',
     
     // Landing page - Features
-    'landing-feature1-title': 'Expert Instructors',
-    'landing-feature1-desc': 'Learn from certified yoga teachers with years of experience',
-    'landing-feature2-title': 'Flexible Schedule',
-    'landing-feature2-desc': 'Classes throughout the day to fit your busy lifestyle',
-    'landing-feature3-title': 'All Levels Welcome',
-    'landing-feature3-desc': 'From beginners to advanced practitioners',
-    
-    // Landing page - Testimonials
-    'landing-testimonial1-text': 'This studio has transformed my life. The instructors are amazing!',
-    'landing-testimonial1-author': 'Sarah M.',
-    'landing-testimonial2-text': 'Best yoga studio in town. Welcoming atmosphere and great classes.',
-    'landing-testimonial2-author': 'Michael R.',
-    'landing-testimonial3-text': 'I love the variety of classes and the supportive community.',
-    'landing-testimonial3-author': 'Emily K.',
+    'landing-feature1-title': 'Flexible Scheduling',
+    'landing-feature1-desc': 'Choose from daily, weekly, or monthly classes that fit your lifestyle',
+    'landing-feature2-title': 'Expert Instructors',
+    'landing-feature2-desc': 'Learn from certified yoga professionals with years of experience',
+    'landing-feature3-title': 'Holistic Approach',
+    'landing-feature3-desc': 'Focus on mind, body, and spirit for complete wellness',
+    'landing-feature4-title': 'All Levels Welcome',
+    'landing-feature4-desc': 'From beginners to advanced practitioners, everyone is welcome',
     
     // About page
     'about-story': 'Founded in 2015, Serenity Yoga has been a sanctuary for those seeking balance, wellness, and inner peace. Our experienced instructors guide students of all levels through transformative yoga practices.',
     'about-mission': 'Our mission is simple: to make yoga accessible to everyone, regardless of experience level or physical ability. We believe in the healing power of yoga and its ability to transform lives.',
-    'about-values': 'We value authenticity, compassion, and community. Every class is designed to honor the ancient traditions of yoga while making it relevant for modern life.',
   });
 
   const [saving, setSaving] = useState(false);
@@ -83,28 +76,16 @@ const ContentEditor = () => {
       id: 'landing-features',
       page: 'Landing Page',
       title: '⭐ Features Section',
-      description: 'Highlight your studio benefits',
+      description: 'Highlight your studio benefits (4 features)',
       fields: [
-        { key: 'landing-feature1-title', label: 'Feature 1 - Title', type: 'text', placeholder: 'Expert Instructors' },
-        { key: 'landing-feature1-desc', label: 'Feature 1 - Description', type: 'textarea', placeholder: 'Learn from certified...' },
-        { key: 'landing-feature2-title', label: 'Feature 2 - Title', type: 'text', placeholder: 'Flexible Schedule' },
-        { key: 'landing-feature2-desc', label: 'Feature 2 - Description', type: 'textarea', placeholder: 'Classes throughout...' },
-        { key: 'landing-feature3-title', label: 'Feature 3 - Title', type: 'text', placeholder: 'All Levels Welcome' },
-        { key: 'landing-feature3-desc', label: 'Feature 3 - Description', type: 'textarea', placeholder: 'From beginners...' },
-      ]
-    },
-    {
-      id: 'landing-testimonials',
-      page: 'Landing Page',
-      title: '💬 Testimonials',
-      description: 'Client reviews and feedback',
-      fields: [
-        { key: 'landing-testimonial1-text', label: 'Testimonial 1 - Quote', type: 'textarea', placeholder: 'This studio has transformed...' },
-        { key: 'landing-testimonial1-author', label: 'Testimonial 1 - Author', type: 'text', placeholder: 'Sarah M.' },
-        { key: 'landing-testimonial2-text', label: 'Testimonial 2 - Quote', type: 'textarea', placeholder: 'Best yoga studio...' },
-        { key: 'landing-testimonial2-author', label: 'Testimonial 2 - Author', type: 'text', placeholder: 'Michael R.' },
-        { key: 'landing-testimonial3-text', label: 'Testimonial 3 - Quote', type: 'textarea', placeholder: 'I love the variety...' },
-        { key: 'landing-testimonial3-author', label: 'Testimonial 3 - Author', type: 'text', placeholder: 'Emily K.' },
+        { key: 'landing-feature1-title', label: 'Feature 1 - Title', type: 'text', placeholder: 'Flexible Scheduling' },
+        { key: 'landing-feature1-desc', label: 'Feature 1 - Description', type: 'textarea', placeholder: 'Choose from daily...' },
+        { key: 'landing-feature2-title', label: 'Feature 2 - Title', type: 'text', placeholder: 'Expert Instructors' },
+        { key: 'landing-feature2-desc', label: 'Feature 2 - Description', type: 'textarea', placeholder: 'Learn from certified...' },
+        { key: 'landing-feature3-title', label: 'Feature 3 - Title', type: 'text', placeholder: 'Holistic Approach' },
+        { key: 'landing-feature3-desc', label: 'Feature 3 - Description', type: 'textarea', placeholder: 'Focus on mind...' },
+        { key: 'landing-feature4-title', label: 'Feature 4 - Title', type: 'text', placeholder: 'All Levels Welcome' },
+        { key: 'landing-feature4-desc', label: 'Feature 4 - Description', type: 'textarea', placeholder: 'From beginners...' },
       ]
     },
     {
@@ -115,7 +96,6 @@ const ContentEditor = () => {
       fields: [
         { key: 'about-story', label: 'Our Story', type: 'textarea', placeholder: 'Founded in 2015...' },
         { key: 'about-mission', label: 'Our Mission', type: 'textarea', placeholder: 'Our mission is...' },
-        { key: 'about-values', label: 'Our Values', type: 'textarea', placeholder: 'We value authenticity...' },
       ]
     }
   ];
@@ -271,29 +251,14 @@ const ContentEditor = () => {
           )}
 
           {activeSection === 'landing-features' && (
-            <div className="bg-white rounded-lg p-6 space-y-6">
-              {[1, 2, 3].map(num => (
-                <div key={num} className="border-b pb-4 last:border-0">
+            <div className="bg-white rounded-lg p-6 grid grid-cols-2 gap-4">
+              {[1, 2, 3, 4].map(num => (
+                <div key={num} className="border rounded-lg p-4">
                   <h3 className="text-lg font-heading font-bold text-gray-900 mb-2">
                     {content[`landing-feature${num}-title`]}
                   </h3>
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 text-sm">
                     {content[`landing-feature${num}-desc`]}
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {activeSection === 'landing-testimonials' && (
-            <div className="bg-white rounded-lg p-6 space-y-4">
-              {[1, 2, 3].map(num => (
-                <div key={num} className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-gray-700 italic mb-2">
-                    "{content[`landing-testimonial${num}-text`]}"
-                  </p>
-                  <p className="text-sm font-semibold text-primary-600">
-                    — {content[`landing-testimonial${num}-author`]}
                   </p>
                 </div>
               ))}
@@ -318,14 +283,6 @@ const ContentEditor = () => {
                   {content['about-mission']}
                 </p>
               </div>
-              <div>
-                <h3 className="text-xl font-heading font-bold text-gray-900 mb-3">
-                  Our Values
-                </h3>
-                <p className="text-gray-600 leading-relaxed">
-                  {content['about-values']}
-                </p>
-              </div>
             </div>
           )}
         </div>
@@ -334,7 +291,7 @@ const ContentEditor = () => {
       {/* Help Text */}
       <div className="bg-blue-50 p-4 rounded-lg">
         <p className="text-sm text-blue-800">
-          💡 <strong>Tip:</strong> All sections are now editable! Changes are saved to the database and will appear on your website.
+          💡 <strong>Tip:</strong> Edit your website content here. Instructors are managed in the Instructors tab.
         </p>
       </div>
     </div>
