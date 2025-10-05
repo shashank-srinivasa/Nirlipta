@@ -1,8 +1,25 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { FaCalendar, FaUsers, FaHeart, FaStar } from 'react-icons/fa';
+import { instructorAPI } from '../services/api';
 
 const Landing = () => {
+  const [instructors, setInstructors] = useState([]);
+
+  useEffect(() => {
+    fetchInstructors();
+  }, []);
+
+  const fetchInstructors = async () => {
+    try {
+      const response = await instructorAPI.getAll();
+      setInstructors(response.data || []);
+    } catch (err) {
+      console.error('Failed to load instructors:', err);
+    }
+  };
+
   const features = [
     {
       icon: <FaCalendar className="text-4xl text-primary-600" />,
@@ -23,27 +40,6 @@ const Landing = () => {
       icon: <FaStar className="text-4xl text-primary-600" />,
       title: 'All Levels Welcome',
       description: 'From beginners to advanced practitioners, everyone is welcome.',
-    },
-  ];
-
-  const testimonials = [
-    {
-      name: 'Sarah Johnson',
-      role: 'Student',
-      image: '👩',
-      text: 'Serenity Yoga has transformed my life. The instructors are amazing and the community is so welcoming!',
-    },
-    {
-      name: 'Michael Chen',
-      role: 'Student',
-      image: '👨',
-      text: 'I started as a complete beginner and now I practice daily. Best decision I ever made.',
-    },
-    {
-      name: 'Emma Davis',
-      role: 'Student',
-      image: '👩‍🦰',
-      text: 'The flexible scheduling makes it easy to fit yoga into my busy life. Highly recommend!',
     },
   ];
 
@@ -98,7 +94,7 @@ const Landing = () => {
                 transition={{ duration: 3, repeat: Infinity, delay: 1 }}
                 className="absolute bottom-10 -right-10 bg-white rounded-full p-4 shadow-xl"
               >
-                <span className="text-3xl">🌸</span>
+                <span className="text-3xl">🌟</span>
               </motion.div>
             </motion.div>
           </div>
@@ -116,10 +112,10 @@ const Landing = () => {
             className="text-center mb-16"
           >
             <h2 className="text-4xl font-heading font-bold text-gray-900 mb-4">
-              Why Choose Serenity Yoga?
+              Why Choose Us
             </h2>
             <p className="text-xl text-gray-600">
-              Experience the difference with our comprehensive approach to wellness
+              Experience the best yoga practice with our unique approach
             </p>
           </motion.div>
 
@@ -134,7 +130,7 @@ const Landing = () => {
                 className="card text-center hover:scale-105 transition-transform duration-300"
               >
                 <div className="flex justify-center mb-4">{feature.icon}</div>
-                <h3 className="text-xl font-heading font-semibold text-gray-900 mb-2">
+                <h3 className="text-xl font-heading font-semibold text-gray-900 mb-3">
                   {feature.title}
                 </h3>
                 <p className="text-gray-600">{feature.description}</p>
@@ -144,50 +140,90 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="py-20 bg-gradient-to-br from-primary-50 to-secondary-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl font-heading font-bold text-gray-900 mb-4">
-              What Our Students Say
-            </h2>
-            <p className="text-xl text-gray-600">
-              Join thousands of happy yogis on their wellness journey
-            </p>
-          </motion.div>
+      {/* Meet Our Instructors Section */}
+      {instructors.length > 0 && (
+        <section className="py-20 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <h2 className="text-4xl font-heading font-bold text-gray-900 mb-4">
+                Meet Our Instructors
+              </h2>
+              <p className="text-xl text-gray-600">
+                Learn from experienced and passionate yoga teachers
+              </p>
+            </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="card"
-              >
-                <div className="flex items-center mb-4">
-                  <span className="text-5xl mr-4">{testimonial.image}</span>
-                  <div>
-                    <h4 className="font-semibold text-gray-900">{testimonial.name}</h4>
-                    <p className="text-sm text-gray-500">{testimonial.role}</p>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {instructors.map((instructor, index) => (
+                <motion.div
+                  key={instructor.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="card text-center hover:shadow-xl transition-shadow"
+                >
+                  {/* Avatar */}
+                  <div className="relative inline-block mb-4">
+                    <img
+                      src={`http://localhost:8080${instructor.avatar_url}`}
+                      alt={instructor.name}
+                      className="w-32 h-32 rounded-full object-cover mx-auto"
+                    />
+                    {instructor.is_featured && (
+                      <div className="absolute -top-2 -right-2 bg-yellow-400 rounded-full p-2">
+                        <FaStar className="text-white" />
+                      </div>
+                    )}
                   </div>
-                </div>
-                <p className="text-gray-600 italic">"{testimonial.text}"</p>
-              </motion.div>
-            ))}
+
+                  {/* Name */}
+                  <h3 className="text-2xl font-heading font-bold text-gray-900 mb-2">
+                    {instructor.name}
+                  </h3>
+
+                  {/* Bio */}
+                  {instructor.instructor_bio && (
+                    <p className="text-gray-600 mb-4 line-clamp-3">
+                      {instructor.instructor_bio}
+                    </p>
+                  )}
+
+                  {/* Specialties */}
+                  {instructor.instructor_specialties && instructor.instructor_specialties.length > 0 && (
+                    <div className="flex flex-wrap gap-2 justify-center mb-4">
+                      {instructor.instructor_specialties.map((specialty, idx) => (
+                        <span
+                          key={idx}
+                          className="text-xs px-3 py-1 bg-primary-100 text-primary-700 rounded-full"
+                        >
+                          {specialty}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Experience */}
+                  {instructor.years_experience > 0 && (
+                    <p className="text-sm text-gray-500">
+                      {instructor.years_experience} years of experience
+                    </p>
+                  )}
+                </motion.div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* CTA Section */}
-      <section className="py-20 bg-primary-600 text-white">
+      <section className="py-20 bg-gradient-to-br from-primary-600 to-secondary-600 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -196,17 +232,13 @@ const Landing = () => {
             viewport={{ once: true }}
           >
             <h2 className="text-4xl font-heading font-bold mb-6">
-              Ready to Start Your Journey?
+              Ready to Begin Your Journey?
             </h2>
-            <p className="text-xl mb-8 text-primary-100">
-              Join our community today and take the first step towards a healthier, 
-              more balanced life.
+            <p className="text-xl mb-8 opacity-90">
+              Join our community and discover the transformative power of yoga
             </p>
-            <Link
-              to="/schedule"
-              className="inline-block bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors duration-200 shadow-lg hover:shadow-xl"
-            >
-              Browse Classes
+            <Link to="/schedule" className="inline-block bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors">
+              View Class Schedule
             </Link>
           </motion.div>
         </div>
@@ -216,4 +248,3 @@ const Landing = () => {
 };
 
 export default Landing;
-
