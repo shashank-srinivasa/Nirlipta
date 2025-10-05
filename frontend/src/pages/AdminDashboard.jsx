@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaEdit, FaCalendarPlus, FaUsers, FaChartLine } from 'react-icons/fa';
+import ClassManagement from './admin/ClassManagement';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: <FaChartLine /> },
-    { id: 'content', label: 'Edit Content', icon: <FaEdit /> },
+    { id: 'classes', label: 'Manage Classes', icon: <FaEdit /> },
     { id: 'schedule', label: 'Manage Schedule', icon: <FaCalendarPlus /> },
     { id: 'users', label: 'Users', icon: <FaUsers /> },
   ];
@@ -69,6 +70,10 @@ const AdminDashboard = () => {
                     <p className="text-gray-600">Analytics charts and graphs will appear here</p>
                   </div>
                 </div>
+              )}
+
+              {activeTab === 'classes' && (
+                <ClassManagement />
               )}
 
               {activeTab === 'content' && (

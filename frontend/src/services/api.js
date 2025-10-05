@@ -76,16 +76,19 @@ export const contentAPI = {
 // Admin endpoints
 export const adminAPI = {
   // Classes management
+  getAllClasses: () => api.get('/classes'), // Use public endpoint to get all
   createClass: (data) => api.post('/admin/classes', data),
   updateClass: (id, data) => api.put(`/admin/classes/${id}`, data),
   deleteClass: (id) => api.delete(`/admin/classes/${id}`),
   
   // Schedules management
+  getAllSchedules: (params) => api.get('/schedules', { params }),
   createSchedule: (data) => api.post('/admin/schedules', data),
   updateSchedule: (id, data) => api.put(`/admin/schedules/${id}`, data),
   deleteSchedule: (id) => api.delete(`/admin/schedules/${id}`),
   
   // Content management
+  getContent: (page) => api.get(`/content/${page}`),
   updateContent: (data) => api.put('/admin/content', data),
   
   // User management
