@@ -68,6 +68,13 @@ export const enrollmentsAPI = {
   cancel: (id) => api.delete(`/enrollments/${id}`),
 };
 
+// Alias for consistency
+export const enrollmentAPI = {
+  enroll: (scheduleId) => api.post('/enrollments', { schedule_id: scheduleId }),
+  getMyEnrollments: () => api.get('/enrollments/my'),
+  cancel: (enrollmentId) => api.delete(`/enrollments/${enrollmentId}`),
+};
+
 // Content endpoints
 export const contentAPI = {
   getByPage: (page) => api.get(`/content/${page}`),
