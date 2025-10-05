@@ -2,14 +2,18 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaEdit, FaCalendarPlus, FaUsers, FaChartLine } from 'react-icons/fa';
 import ClassManagement from './admin/ClassManagement';
+import ScheduleManagement from './admin/ScheduleManagement';
+import ContentEditor from './admin/ContentEditor';
+import UserManagement from './admin/UserManagement';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: <FaChartLine /> },
-    { id: 'classes', label: 'Manage Classes', icon: <FaEdit /> },
-    { id: 'schedule', label: 'Manage Schedule', icon: <FaCalendarPlus /> },
+    { id: 'classes', label: 'Classes', icon: <FaEdit /> },
+    { id: 'schedule', label: 'Schedule', icon: <FaCalendarPlus /> },
+    { id: 'content', label: 'Content', icon: <FaEdit /> },
     { id: 'users', label: 'Users', icon: <FaUsers /> },
   ];
 
@@ -76,7 +80,19 @@ const AdminDashboard = () => {
                 <ClassManagement />
               )}
 
+              {activeTab === 'schedule' && (
+                <ScheduleManagement />
+              )}
+
               {activeTab === 'content' && (
+                <ContentEditor />
+              )}
+
+              {activeTab === 'users' && (
+                <UserManagement />
+              )}
+
+              {activeTab === 'old_content' && (
                 <div>
                   <h2 className="text-2xl font-heading font-semibold mb-6">
                     Edit Website Content
