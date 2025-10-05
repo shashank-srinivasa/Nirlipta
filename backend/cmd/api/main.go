@@ -44,6 +44,9 @@ func main() {
 		AllowCredentials: true,
 	}))
 
+	// Serve static files (uploaded avatars)
+	router.Static("/uploads", "./uploads")
+
 	// Initialize API routes
 	api.RegisterRoutes(router, db)
 

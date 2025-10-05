@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"yoga-studio-app/internal/auth"
 	"yoga-studio-app/internal/models"
@@ -473,6 +474,100 @@ func (h *UserHandler) UpdateRole(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "User role updated successfully"})
 }
 
+// UploadAvatar - Upload profile picture
+func (h *UserHandler) UploadAvatar(c *gin.Context) {
+	userID := c.GetString("user_id")
+
+	// Get file from request
+	file, err := c.FormFile("profile_picture")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No file uploaded"})
+		return
+	}
+
+	// Validate file size (max 5MB)
+	if file.Size > 5*1024*1024 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "File too large (max 5MB)"})
+		return
+	}
+
+	// Validate file type
+	contentType := file.Header.Get("Content-Type")
+	if contentType != "image/jpeg" && contentType != "image/png" && contentType != "image/webp" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Only JPEG, PNG, and WebP images allowed"})
+		return
+	}
+
+	// Create uploads directory if it doesn't exist
+	uploadsDir := "./uploads/avatars"
+	os.MkdirAll(uploadsDir, os.ModePerm)
+
+	// Generate unique filename
+	ext := ".jpg"
+	if contentType == "image/png" {
+		ext = ".png"
+	} else if contentType == "image/webp" {
+		ext = ".webp"
+	}
+	filename := fmt.Sprintf("%s_%d%s", userID, time.Now().Unix(), ext)
+	filepath := fmt.Sprintf("%s/%s", uploadsDir, filename)
+
+	// Save file
+	if err := c.SaveUploadedFile(file, filepath); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file"})
+		return
+	}
+
+	// Update user avatar_url
+	avatarURL := fmt.Sprintf("/uploads/avatars/%s", filename)
+	if err := h.db.Model(&models.User{}).Where("id = ?", userID).Update("avatar_url", avatarURL).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update avatar"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"avatar_url": avatarURL})
+}
+
+// UpdateInstructorBio - Update instructor bio (for instructors)
+func (h *UserHandler) UpdateInstructorBio(c *gin.Context) {
+	userID := c.GetString("user_id")
+
+	var user models.User
+	if err := h.db.First(&user, "id = ?", userID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	if !user.IsInstructor {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Only instructors can update bio"})
+		return
+	}
+
+	var input struct {
+		InstructorBio         string   `json:"instructor_bio"`
+		InstructorSpecialties []string `json:"instructor_specialties"`
+		YearsExperience       int      `json:"years_experience"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	updates := map[string]interface{}{
+		"instructor_bio":         input.InstructorBio,
+		"instructor_specialties": input.InstructorSpecialties,
+		"years_experience":       input.YearsExperience,
+	}
+
+	if err := h.db.Model(&user).Updates(updates).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update bio"})
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
+}
+
 // ============ Content Handler ============
 type ContentHandler struct {
 	db *gorm.DB
@@ -562,4 +657,142 @@ func (h *AnalyticsHandler) GetOverview(c *gin.Context) {
 			"instructors":       0,
 		},
 	})
+}
+
+// ============ Instructor Handler ============
+type InstructorHandler struct {
+	db *gorm.DB
+}
+
+func NewInstructorHandler(db *gorm.DB) *InstructorHandler {
+	return &InstructorHandler{db: db}
+}
+
+// GetAll - Public endpoint: get active instructors with avatars
+func (h *InstructorHandler) GetAll(c *gin.Context) {
+	var instructors []models.User
+
+	if err := h.db.Where("is_instructor = ? AND avatar_url != ''", true).
+		Order("instructor_order ASC, name ASC").
+		Find(&instructors).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch instructors"})
+		return
+	}
+
+	c.JSON(http.StatusOK, instructors)
+}
+
+// GetAllAdmin - Admin endpoint: get all instructors
+func (h *InstructorHandler) GetAllAdmin(c *gin.Context) {
+	var instructors []models.User
+
+	if err := h.db.Where("is_instructor = ?", true).
+		Order("instructor_order ASC, name ASC").
+		Find(&instructors).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch instructors"})
+		return
+	}
+
+	c.JSON(http.StatusOK, instructors)
+}
+
+// Update - Update instructor profile
+func (h *InstructorHandler) Update(c *gin.Context) {
+	id := c.Param("id")
+	userID := c.GetString("user_id")
+
+	var instructor models.User
+	if err := h.db.First(&instructor, "id = ?", id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Instructor not found"})
+		return
+	}
+
+	// Check if user is admin or updating their own profile
+	var currentUser models.User
+	h.db.First(&currentUser, "id = ?", userID)
+	if !currentUser.IsAdmin() && instructor.ID.String() != userID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized"})
+		return
+	}
+
+	var input struct {
+		InstructorBio         string   `json:"instructor_bio"`
+		InstructorSpecialties []string `json:"instructor_specialties"`
+		YearsExperience       int      `json:"years_experience"`
+		IsFeatured            bool     `json:"is_featured"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	updates := map[string]interface{}{
+		"instructor_bio":         input.InstructorBio,
+		"instructor_specialties": input.InstructorSpecialties,
+		"years_experience":       input.YearsExperience,
+	}
+
+	// Only admin can set featured
+	if currentUser.IsAdmin() {
+		updates["is_featured"] = input.IsFeatured
+	}
+
+	if err := h.db.Model(&instructor).Updates(updates).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update instructor"})
+		return
+	}
+
+	c.JSON(http.StatusOK, instructor)
+}
+
+// UpdateOrder - Reorder instructors
+func (h *InstructorHandler) UpdateOrder(c *gin.Context) {
+	id := c.Param("id")
+
+	var input struct {
+		Order int `json:"order" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.db.Model(&models.User{}).Where("id = ?", id).Update("instructor_order", input.Order).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update order"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Order updated"})
+}
+
+// PromoteToInstructor - Promote a user to instructor
+func (h *InstructorHandler) PromoteToInstructor(c *gin.Context) {
+	id := c.Param("id")
+
+	var user models.User
+	if err := h.db.First(&user, "id = ?", id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	if err := h.db.Model(&user).Update("is_instructor", true).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to promote user"})
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
+}
+
+// RemoveInstructor - Remove instructor status
+func (h *InstructorHandler) RemoveInstructor(c *gin.Context) {
+	id := c.Param("id")
+
+	if err := h.db.Model(&models.User{}).Where("id = ?", id).Update("is_instructor", false).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to remove instructor"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Instructor removed"})
 }

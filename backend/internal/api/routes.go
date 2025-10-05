@@ -52,6 +52,13 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 				contentHandler := NewContentHandler(db)
 				content.GET("/:page", contentHandler.GetByPage)
 			}
+
+			// Instructors (public read)
+			instructors := public.Group("/instructors")
+			{
+				instructorHandler := NewInstructorHandler(db)
+				instructors.GET("", instructorHandler.GetAll)
+			}
 		}
 
 		// Protected routes (require authentication)
@@ -64,6 +71,8 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 				userHandler := NewUserHandler(db)
 				users.GET("/me", userHandler.GetProfile)
 				users.PUT("/me", userHandler.UpdateProfile)
+				users.POST("/me/avatar", userHandler.UploadAvatar)
+				users.PUT("/me/instructor-bio", userHandler.UpdateInstructorBio)
 			}
 
 			// Enrollments
@@ -111,6 +120,17 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 				userHandler := NewUserHandler(db)
 				users.GET("", userHandler.GetAll)
 				users.PUT("/:id/role", userHandler.UpdateRole)
+			}
+
+			// Instructor management
+			instructors := admin.Group("/instructors")
+			{
+				instructorHandler := NewInstructorHandler(db)
+				instructors.GET("", instructorHandler.GetAllAdmin)
+				instructors.PUT("/:id", instructorHandler.Update)
+				instructors.PUT("/:id/order", instructorHandler.UpdateOrder)
+				instructors.PUT("/:id/promote", instructorHandler.PromoteToInstructor)
+				instructors.DELETE("/:id", instructorHandler.RemoveInstructor)
 			}
 
 			// Analytics (placeholder for now)

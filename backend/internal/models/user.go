@@ -24,7 +24,15 @@ type User struct {
 	AuthProviderID string    `gorm:"not null" json:"auth_provider_id"`
 	CreatedAt      time.Time `json:"created_at"`
 	UpdatedAt      time.Time `json:"updated_at"`
-	
+
+	// Instructor fields
+	IsInstructor          bool     `gorm:"default:false" json:"is_instructor"`
+	InstructorBio         string   `json:"instructor_bio,omitempty"`
+	InstructorSpecialties []string `gorm:"type:text[]" json:"instructor_specialties,omitempty"`
+	YearsExperience       int      `json:"years_experience,omitempty"`
+	InstructorOrder       int      `json:"instructor_order,omitempty"`
+	IsFeatured            bool     `gorm:"default:false" json:"is_featured"`
+
 	// Relationships
 	Enrollments []Enrollment `json:"enrollments,omitempty"`
 }
@@ -40,3 +48,6 @@ func (u *User) IsAdmin() bool {
 	return u.Role == RoleAdmin
 }
 
+func (u *User) IsInstructorUser() bool {
+	return u.IsInstructor && u.AvatarURL != ""
+}
