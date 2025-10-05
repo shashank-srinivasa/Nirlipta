@@ -6,13 +6,31 @@ import { adminAPI } from '../../services/api';
 const ContentEditor = () => {
   const [activeSection, setActiveSection] = useState('landing-hero');
   const [content, setContent] = useState({
-    // Landing page
+    // Landing page - Hero
     'landing-hero-title': 'Find Your Inner Peace',
     'landing-hero-subtitle': 'Transform your mind, body, and spirit through the ancient practice of yoga. Join our community of mindful practitioners.',
     'landing-cta': 'View Schedule',
+    
+    // Landing page - Features
+    'landing-feature1-title': 'Expert Instructors',
+    'landing-feature1-desc': 'Learn from certified yoga teachers with years of experience',
+    'landing-feature2-title': 'Flexible Schedule',
+    'landing-feature2-desc': 'Classes throughout the day to fit your busy lifestyle',
+    'landing-feature3-title': 'All Levels Welcome',
+    'landing-feature3-desc': 'From beginners to advanced practitioners',
+    
+    // Landing page - Testimonials
+    'landing-testimonial1-text': 'This studio has transformed my life. The instructors are amazing!',
+    'landing-testimonial1-author': 'Sarah M.',
+    'landing-testimonial2-text': 'Best yoga studio in town. Welcoming atmosphere and great classes.',
+    'landing-testimonial2-author': 'Michael R.',
+    'landing-testimonial3-text': 'I love the variety of classes and the supportive community.',
+    'landing-testimonial3-author': 'Emily K.',
+    
     // About page
     'about-story': 'Founded in 2015, Serenity Yoga has been a sanctuary for those seeking balance, wellness, and inner peace. Our experienced instructors guide students of all levels through transformative yoga practices.',
     'about-mission': 'Our mission is simple: to make yoga accessible to everyone, regardless of experience level or physical ability. We believe in the healing power of yoga and its ability to transform lives.',
+    'about-values': 'We value authenticity, compassion, and community. Every class is designed to honor the ancient traditions of yoga while making it relevant for modern life.',
   });
 
   const [saving, setSaving] = useState(false);
@@ -31,14 +49,19 @@ const ContentEditor = () => {
       ]);
       
       // Merge fetched content with defaults
-      const fetchedContent = {
-        'landing-hero-title': landing.data?.hero_title || content['landing-hero-title'],
-        'landing-hero-subtitle': landing.data?.hero_subtitle || content['landing-hero-subtitle'],
-        'landing-cta': landing.data?.cta_text || content['landing-cta'],
-        'about-story': about.data?.story || content['about-story'],
-        'about-mission': about.data?.mission || content['about-mission'],
-      };
-      setContent(fetchedContent);
+      if (landing.data || about.data) {
+        setContent(prev => ({
+          ...prev,
+          ...Object.keys(landing.data || {}).reduce((acc, key) => {
+            acc[`landing-${key.replace(/_/g, '-')}`] = landing.data[key];
+            return acc;
+          }, {}),
+          ...Object.keys(about.data || {}).reduce((acc, key) => {
+            acc[`about-${key.replace(/_/g, '-')}`] = about.data[key];
+            return acc;
+          }, {})
+        }));
+      }
     } catch (err) {
       console.error('Failed to load content:', err);
     }
@@ -57,6 +80,34 @@ const ContentEditor = () => {
       ]
     },
     {
+      id: 'landing-features',
+      page: 'Landing Page',
+      title: '⭐ Features Section',
+      description: 'Highlight your studio benefits',
+      fields: [
+        { key: 'landing-feature1-title', label: 'Feature 1 - Title', type: 'text', placeholder: 'Expert Instructors' },
+        { key: 'landing-feature1-desc', label: 'Feature 1 - Description', type: 'textarea', placeholder: 'Learn from certified...' },
+        { key: 'landing-feature2-title', label: 'Feature 2 - Title', type: 'text', placeholder: 'Flexible Schedule' },
+        { key: 'landing-feature2-desc', label: 'Feature 2 - Description', type: 'textarea', placeholder: 'Classes throughout...' },
+        { key: 'landing-feature3-title', label: 'Feature 3 - Title', type: 'text', placeholder: 'All Levels Welcome' },
+        { key: 'landing-feature3-desc', label: 'Feature 3 - Description', type: 'textarea', placeholder: 'From beginners...' },
+      ]
+    },
+    {
+      id: 'landing-testimonials',
+      page: 'Landing Page',
+      title: '💬 Testimonials',
+      description: 'Client reviews and feedback',
+      fields: [
+        { key: 'landing-testimonial1-text', label: 'Testimonial 1 - Quote', type: 'textarea', placeholder: 'This studio has transformed...' },
+        { key: 'landing-testimonial1-author', label: 'Testimonial 1 - Author', type: 'text', placeholder: 'Sarah M.' },
+        { key: 'landing-testimonial2-text', label: 'Testimonial 2 - Quote', type: 'textarea', placeholder: 'Best yoga studio...' },
+        { key: 'landing-testimonial2-author', label: 'Testimonial 2 - Author', type: 'text', placeholder: 'Michael R.' },
+        { key: 'landing-testimonial3-text', label: 'Testimonial 3 - Quote', type: 'textarea', placeholder: 'I love the variety...' },
+        { key: 'landing-testimonial3-author', label: 'Testimonial 3 - Author', type: 'text', placeholder: 'Emily K.' },
+      ]
+    },
+    {
       id: 'about-content',
       page: 'About Page',
       title: '📖 About Content',
@@ -64,6 +115,7 @@ const ContentEditor = () => {
       fields: [
         { key: 'about-story', label: 'Our Story', type: 'textarea', placeholder: 'Founded in 2015...' },
         { key: 'about-mission', label: 'Our Mission', type: 'textarea', placeholder: 'Our mission is...' },
+        { key: 'about-values', label: 'Our Values', type: 'textarea', placeholder: 'We value authenticity...' },
       ]
     }
   ];
@@ -78,8 +130,9 @@ const ContentEditor = () => {
     try {
       // Save each field in the section
       for (const field of section.fields) {
-        const [page, key] = field.key.split('-').slice(0, 2);
-        const sectionKey = field.key.split('-').slice(1).join('_');
+        const parts = field.key.split('-');
+        const page = parts[0]; // 'landing' or 'about'
+        const sectionKey = parts.slice(1).join('_'); // rest joined with underscore
         
         await adminAPI.updateContent({
           page_name: page,
@@ -108,7 +161,7 @@ const ContentEditor = () => {
           Content Editor
         </h1>
         <p className="text-gray-600 mt-1">
-          Edit your website content easily
+          Edit every section of your website
         </p>
       </div>
 
@@ -135,7 +188,7 @@ const ContentEditor = () => {
           <button
             key={section.id}
             onClick={() => setActiveSection(section.id)}
-            className={`px-6 py-3 rounded-lg font-medium whitespace-nowrap transition-all ${
+            className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all text-sm ${
               activeSection === section.id
                 ? 'bg-primary-600 text-white shadow-lg'
                 : 'bg-white text-gray-700 hover:bg-gray-50'
@@ -159,7 +212,7 @@ const ContentEditor = () => {
             </p>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
             {activeData.fields.map(field => (
               <div key={field.key}>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -169,8 +222,8 @@ const ContentEditor = () => {
                   <textarea
                     value={content[field.key]}
                     onChange={(e) => setContent({...content, [field.key]: e.target.value})}
-                    rows="4"
-                    className="input-field"
+                    rows="3"
+                    className="input-field text-sm"
                     placeholder={field.placeholder}
                   />
                 ) : (
@@ -192,15 +245,15 @@ const ContentEditor = () => {
             className="btn-primary w-full mt-6 flex items-center justify-center gap-2"
           >
             <FaSave />
-            {saving ? 'Saving...' : 'Save Changes'}
+            {saving ? 'Saving...' : 'Save All Changes'}
           </button>
         </div>
 
         {/* Live Preview */}
-        <div className="card bg-gradient-to-br from-primary-50 to-secondary-50">
-          <div className="flex items-center gap-2 mb-4">
+        <div className="card bg-gradient-to-br from-primary-50 to-secondary-50 max-h-[700px] overflow-y-auto">
+          <div className="flex items-center gap-2 mb-4 sticky top-0 bg-gradient-to-br from-primary-50 to-secondary-50 pb-2">
             <FaEye className="text-primary-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Preview</h3>
+            <h3 className="text-lg font-semibold text-gray-900">Live Preview</h3>
           </div>
 
           {activeSection === 'landing-hero' && (
@@ -214,6 +267,36 @@ const ContentEditor = () => {
               <button className="btn-primary">
                 {content['landing-cta']}
               </button>
+            </div>
+          )}
+
+          {activeSection === 'landing-features' && (
+            <div className="bg-white rounded-lg p-6 space-y-6">
+              {[1, 2, 3].map(num => (
+                <div key={num} className="border-b pb-4 last:border-0">
+                  <h3 className="text-lg font-heading font-bold text-gray-900 mb-2">
+                    {content[`landing-feature${num}-title`]}
+                  </h3>
+                  <p className="text-gray-600">
+                    {content[`landing-feature${num}-desc`]}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {activeSection === 'landing-testimonials' && (
+            <div className="bg-white rounded-lg p-6 space-y-4">
+              {[1, 2, 3].map(num => (
+                <div key={num} className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-gray-700 italic mb-2">
+                    "{content[`landing-testimonial${num}-text`]}"
+                  </p>
+                  <p className="text-sm font-semibold text-primary-600">
+                    — {content[`landing-testimonial${num}-author`]}
+                  </p>
+                </div>
+              ))}
             </div>
           )}
 
@@ -235,6 +318,14 @@ const ContentEditor = () => {
                   {content['about-mission']}
                 </p>
               </div>
+              <div>
+                <h3 className="text-xl font-heading font-bold text-gray-900 mb-3">
+                  Our Values
+                </h3>
+                <p className="text-gray-600 leading-relaxed">
+                  {content['about-values']}
+                </p>
+              </div>
             </div>
           )}
         </div>
@@ -243,8 +334,7 @@ const ContentEditor = () => {
       {/* Help Text */}
       <div className="bg-blue-50 p-4 rounded-lg">
         <p className="text-sm text-blue-800">
-          💡 <strong>Tip:</strong> Your changes are saved to the database. 
-          The preview shows how it will look on your website.
+          💡 <strong>Tip:</strong> All sections are now editable! Changes are saved to the database and will appear on your website.
         </p>
       </div>
     </div>
