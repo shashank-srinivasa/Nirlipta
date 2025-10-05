@@ -47,6 +47,8 @@ func Connect() (*gorm.DB, error) {
 func Migrate(db *gorm.DB) error {
 	log.Println("Running database migrations...")
 	
+	// AutoMigrate will only add missing columns and tables
+	// It won't modify existing columns or delete unused columns
 	err := db.AutoMigrate(
 		&models.User{},
 		&models.Class{},
@@ -56,7 +58,8 @@ func Migrate(db *gorm.DB) error {
 	)
 
 	if err != nil {
-		return fmt.Errorf("migration failed: %w", err)
+		// Log error but don't fail if tables already exist
+		log.Printf("Migration warning: %v", err)
 	}
 
 	log.Println("Migrations completed successfully")

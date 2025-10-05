@@ -74,4 +74,3 @@ func RefreshToken(tokenString string) (string, error) {
 	// Generate new token with same claims but new expiry
 	return GenerateToken(claims.UserID, claims.Email, claims.Role)
 }
-

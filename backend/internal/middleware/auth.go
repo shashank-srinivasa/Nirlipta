@@ -28,7 +28,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		token := parts[1]
-		
+
 		// Validate JWT token
 		claims, err := auth.ValidateToken(token)
 		if err != nil {
@@ -36,7 +36,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		
+
 		// Set user info in context
 		c.Set("user_id", claims.UserID.String())
 		c.Set("user_role", claims.Role)
@@ -64,4 +64,3 @@ func AdminMiddleware() gin.HandlerFunc {
 		c.Next()
 	}
 }
-
