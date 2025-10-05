@@ -1,7 +1,15 @@
 package api
 
 import (
+	"fmt"
+	"net/http"
+	"os"
+
+	"yoga-studio-app/internal/auth"
+	"yoga-studio-app/internal/models"
+
 	"github.com/gin-gonic/gin"
+	"github.com/markbates/goth/gothic"
 	"gorm.io/gorm"
 )
 
@@ -15,19 +23,89 @@ func NewAuthHandler(db *gorm.DB) *AuthHandler {
 }
 
 func (h *AuthHandler) GoogleLogin(c *gin.Context) {
-	c.JSON(200, gin.H{"message": "Google OAuth login - to be implemented"})
+	q := c.Request.URL.Query()
+	q.Add("provider", "google")
+	c.Request.URL.RawQuery = q.Encode()
+	
+	gothic.BeginAuthHandler(c.Writer, c.Request)
 }
 
 func (h *AuthHandler) GoogleCallback(c *gin.Context) {
-	c.JSON(200, gin.H{"message": "Google OAuth callback - to be implemented"})
+	q := c.Request.URL.Query()
+	q.Add("provider", "google")
+	c.Request.URL.RawQuery = q.Encode()
+	
+	gothUser, err := gothic.CompleteUserAuth(c.Writer, c.Request)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to authenticate with Google"})
+		return
+	}
+	
+	h.handleOAuthCallback(c, gothUser.Email, gothUser.Name, gothUser.AvatarURL, "google", gothUser.UserID)
 }
 
 func (h *AuthHandler) FacebookLogin(c *gin.Context) {
-	c.JSON(200, gin.H{"message": "Facebook OAuth login - to be implemented"})
+	q := c.Request.URL.Query()
+	q.Add("provider", "facebook")
+	c.Request.URL.RawQuery = q.Encode()
+	
+	gothic.BeginAuthHandler(c.Writer, c.Request)
 }
 
 func (h *AuthHandler) FacebookCallback(c *gin.Context) {
-	c.JSON(200, gin.H{"message": "Facebook OAuth callback - to be implemented"})
+	q := c.Request.URL.Query()
+	q.Add("provider", "facebook")
+	c.Request.URL.RawQuery = q.Encode()
+	
+	gothUser, err := gothic.CompleteUserAuth(c.Writer, c.Request)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to authenticate with Facebook"})
+		return
+	}
+	
+	h.handleOAuthCallback(c, gothUser.Email, gothUser.Name, gothUser.AvatarURL, "facebook", gothUser.UserID)
+}
+
+func (h *AuthHandler) handleOAuthCallback(c *gin.Context, email, name, avatarURL, provider, providerID string) {
+	var user models.User
+	
+	// Check if user exists
+	result := h.db.Where("email = ? AND auth_provider = ?", email, provider).First(&user)
+	
+	if result.Error == gorm.ErrRecordNotFound {
+		// Create new user
+		user = models.User{
+			Email:          email,
+			Name:           name,
+			AvatarURL:      avatarURL,
+			Role:           models.RoleClient,
+			AuthProvider:   provider,
+			AuthProviderID: providerID,
+		}
+		
+		if err := h.db.Create(&user).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
+			return
+		}
+	} else if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		return
+	}
+	
+	// Generate JWT token
+	token, err := auth.GenerateToken(user.ID, user.Email, string(user.Role))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+		return
+	}
+	
+	// Redirect to frontend with token
+	frontendURL := os.Getenv("FRONTEND_URL")
+	if frontendURL == "" {
+		frontendURL = "http://localhost:5173"
+	}
+	
+	c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s/auth/callback?token=%s", frontendURL, token))
 }
 
 func (h *AuthHandler) Logout(c *gin.Context) {
@@ -123,19 +201,65 @@ func NewUserHandler(db *gorm.DB) *UserHandler {
 }
 
 func (h *UserHandler) GetProfile(c *gin.Context) {
-	c.JSON(200, gin.H{"message": "Get user profile"})
+	userID := c.GetString("user_id")
+	
+	var user models.User
+	if err := h.db.First(&user, "id = ?", userID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+	
+	c.JSON(http.StatusOK, user)
 }
 
 func (h *UserHandler) UpdateProfile(c *gin.Context) {
-	c.JSON(200, gin.H{"message": "Profile updated"})
+	userID := c.GetString("user_id")
+	
+	var input struct {
+		Name string `json:"name"`
+	}
+	
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	
+	if err := h.db.Model(&models.User{}).Where("id = ?", userID).Update("name", input.Name).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update profile"})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{"message": "Profile updated successfully"})
 }
 
 func (h *UserHandler) GetAll(c *gin.Context) {
-	c.JSON(200, gin.H{"message": "Get all users", "data": []string{}})
+	var users []models.User
+	if err := h.db.Find(&users).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch users"})
+		return
+	}
+	
+	c.JSON(http.StatusOK, users)
 }
 
 func (h *UserHandler) UpdateRole(c *gin.Context) {
-	c.JSON(200, gin.H{"message": "User role updated"})
+	userID := c.Param("id")
+	
+	var input struct {
+		Role string `json:"role"`
+	}
+	
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	
+	if err := h.db.Model(&models.User{}).Where("id = ?", userID).Update("role", input.Role).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update role"})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{"message": "User role updated successfully"})
 }
 
 // ============ Content Handler ============

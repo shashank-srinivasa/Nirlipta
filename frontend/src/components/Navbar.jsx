@@ -1,13 +1,21 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaBars, FaTimes, FaUser } from 'react-icons/fa';
+import { FaBars, FaTimes, FaUser, FaSignOutAlt } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import useAuthStore from '../store/authStore';
+import { authAPI } from '../services/api';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const location = useLocation();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, logout } = useAuthStore();
+
+  const handleLogout = () => {
+    authAPI.logout();
+    logout();
+    setShowUserMenu(false);
+  };
 
   const navigation = [
     { name: 'Home', path: '/' },
@@ -48,25 +56,48 @@ const Navbar = () => {
             ))}
 
             {isAuthenticated ? (
-              <>
-                <Link
-                  to="/profile"
+              <div className="relative">
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
                   className="flex items-center space-x-2 text-gray-700 hover:text-primary-600 transition-colors"
                 >
                   <FaUser />
                   <span className="text-sm font-medium">{user?.name}</span>
-                </Link>
-                {user?.role === 'ADMIN' && (
-                  <Link
-                    to="/admin"
-                    className="btn-primary text-sm py-2 px-4"
-                  >
-                    Admin
-                  </Link>
+                </button>
+                
+                {showUserMenu && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
+                    <Link
+                      to="/profile"
+                      onClick={() => setShowUserMenu(false)}
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                    >
+                      My Profile
+                    </Link>
+                    {user?.role === 'ADMIN' && (
+                      <Link
+                        to="/admin"
+                        onClick={() => setShowUserMenu(false)}
+                        className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      >
+                        Admin Dashboard
+                      </Link>
+                    )}
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 flex items-center"
+                    >
+                      <FaSignOutAlt className="mr-2" />
+                      Logout
+                    </button>
+                  </div>
                 )}
-              </>
+              </div>
             ) : (
-              <button className="btn-primary text-sm py-2 px-4">
+              <button
+                onClick={() => authAPI.googleLogin()}
+                className="btn-primary text-sm py-2 px-4"
+              >
                 Sign In
               </button>
             )}

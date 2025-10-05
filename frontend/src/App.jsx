@@ -7,6 +7,7 @@ import About from './pages/About';
 import Schedule from './pages/Schedule';
 import Profile from './pages/Profile';
 import AdminDashboard from './pages/AdminDashboard';
+import AuthCallback from './pages/AuthCallback';
 import NotFound from './pages/NotFound';
 
 const queryClient = new QueryClient({
@@ -32,6 +33,7 @@ function App() {
               <Route path="/schedule" element={<Schedule />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>

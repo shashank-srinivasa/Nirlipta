@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"strings"
 
+	"yoga-studio-app/internal/auth"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -27,12 +29,18 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		token := parts[1]
 		
-		// TODO: Validate JWT token and extract user info
-		// For now, we'll just pass through
-		// In production, validate the token and set user info in context
+		// Validate JWT token
+		claims, err := auth.ValidateToken(token)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token"})
+			c.Abort()
+			return
+		}
 		
-		c.Set("user_id", "temp-user-id")
-		c.Set("user_role", "CLIENT")
+		// Set user info in context
+		c.Set("user_id", claims.UserID.String())
+		c.Set("user_role", claims.Role)
+		c.Set("user_email", claims.Email)
 		c.Next()
 	}
 }

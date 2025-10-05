@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"yoga-studio-app/internal/api"
+	"yoga-studio-app/internal/auth"
 	"yoga-studio-app/internal/database"
 
 	"github.com/gin-contrib/cors"
@@ -17,6 +18,9 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found, using environment variables")
 	}
+
+	// Initialize OAuth providers
+	auth.InitOAuth()
 
 	// Initialize database
 	db, err := database.Connect()
