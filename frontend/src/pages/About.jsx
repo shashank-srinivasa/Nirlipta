@@ -1,34 +1,49 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { contentAPI } from '../services/api';
+import { Link } from 'react-router-dom';
+import { contentAPI, instructorAPI } from '../services/api';
 
 const About = () => {
   const [content, setContent] = useState({
-    'about-story': 'Founded in 2015, Serenity Yoga has been a sanctuary for those seeking balance, wellness, and inner peace. Our experienced instructors guide students of all levels through transformative yoga practices.',
+    'about-story': 'Founded in 2015, Nirlipta Yoga has been a sanctuary for those seeking balance, wellness, and inner peace. Our experienced instructors guide students of all levels through transformative yoga practices.',
     'about-mission': 'Our mission is simple: to make yoga accessible to everyone, regardless of experience level or physical ability. We believe in the healing power of yoga and its ability to transform lives.',
   });
+  const [instructors, setInstructors] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchContent = async () => {
+    const fetchData = async () => {
       try {
-        const response = await contentAPI.getByPage('about');
-        if (response.data) {
-          setContent(prev => ({ ...prev, ...response.data }));
+        const [contentResponse, instructorsResponse] = await Promise.all([
+          contentAPI.getByPage('about'),
+          instructorAPI.getAll()
+        ]);
+        
+        if (contentResponse.data) {
+          setContent(prev => ({ ...prev, ...contentResponse.data }));
         }
+        
+        setInstructors(instructorsResponse.data || []);
       } catch (err) {
-        console.error('Failed to fetch about page content:', err);
+        console.error('Failed to fetch data:', err);
       } finally {
         setLoading(false);
       }
     };
-    fetchContent();
+    fetchData();
   }, []);
+
+  const getInitials = (name) => {
+    if (!name) return '?';
+    const parts = name.trim().split(' ');
+    if (parts.length === 1) return parts[0][0].toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  };
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-primary-600">Loading...</p>
+        <p className="text-neutral-600">Loading...</p>
       </div>
     );
   }
@@ -36,17 +51,32 @@ const About = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative py-32 bg-primary-50">
-        <div className="max-w-4xl mx-auto px-8 lg:px-16 text-center">
+      <section className="relative h-[60vh] flex items-center justify-center overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0">
+          <motion.img
+            initial={{ scale: 1.1 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 1.5, ease: "easeOut" }}
+            src="https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=2000&auto=format&fit=crop"
+            alt="About Us"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-neutral-900/60 via-neutral-900/70 to-neutral-900/50"></div>
+          <div className="absolute inset-0 bg-gradient-radial from-neutral-900/40 via-transparent to-transparent"></div>
+        </div>
+        
+        {/* Content */}
+        <div className="relative z-10 max-w-4xl mx-auto px-6 lg:px-12 text-center">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
           >
-            <h1 className="text-h1 font-heading text-primary-900 mb-8">
-              About Serenity
+            <h1 className="text-5xl sm:text-6xl md:text-7xl font-heading text-white mb-6 leading-tight">
+              Our Story
             </h1>
-            <p className="text-body-lg text-primary-600 leading-relaxed">
+            <p className="text-lg sm:text-xl text-white/95 max-w-2xl mx-auto leading-relaxed">
               A sanctuary for mind, body, and spirit
             </p>
           </motion.div>
@@ -54,163 +84,134 @@ const About = () => {
       </section>
 
       {/* Story Section */}
-      <section className="py-32">
-        <div className="max-w-6xl mx-auto px-8 lg:px-16">
-          <div className="grid lg:grid-cols-2 gap-20 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-            >
-              <h2 className="text-h2 font-heading text-primary-900 mb-8">
-                Our Story
-              </h2>
-              <p className="text-body text-primary-600 leading-relaxed mb-6">
-                {content['about-story']}
-              </p>
-              <p className="text-body text-primary-600 leading-relaxed">
-                We've created a space where everyone feels welcome, supported, and inspired 
-                to explore their practice. Whether you're taking your first class or you've 
-                been practicing for years, you'll find a home here.
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-              className="relative h-[500px] bg-gradient-to-br from-primary-100 to-accent-100"
-            >
-              {/* Placeholder for image */}
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Mission Section */}
-      <section className="py-32 bg-primary-50">
-        <div className="max-w-6xl mx-auto px-8 lg:px-16">
-          <div className="grid lg:grid-cols-2 gap-20 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-              className="relative h-[500px] bg-gradient-to-br from-accent-100 to-primary-100 order-2 lg:order-1"
-            >
-              {/* Placeholder for image */}
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-              className="order-1 lg:order-2"
-            >
-              <h2 className="text-h2 font-heading text-primary-900 mb-8">
-                Our Mission
-              </h2>
-              <p className="text-body text-primary-600 leading-relaxed mb-6">
+      <section className="py-20 md:py-32">
+        <div className="max-w-4xl mx-auto px-6 lg:px-12">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="text-center"
+          >
+            <h2 className="text-4xl md:text-5xl font-heading text-neutral-900 mb-8">
+              Welcome to Nirlipta
+            </h2>
+            <div className="space-y-6 text-lg text-neutral-600 leading-relaxed">
+              <p>{content['about-story']}</p>
+              <p>
                 {content['about-mission']}
               </p>
-              <p className="text-body text-primary-600 leading-relaxed">
+              <p>
                 Through mindful movement, breath work, and meditation, we help our students 
-                find balance, reduce stress, and cultivate a deeper connection with themselves.
+                find balance, reduce stress, and cultivate a deeper connection with themselves. 
+                Whether you're taking your first class or deepening an established practice, 
+                you'll find a welcoming home here.
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Instructors Section - Only show if there are instructors */}
+      {instructors.length > 0 && (
+        <section className="py-20 md:py-32 bg-neutral-50">
+          <div className="max-w-7xl mx-auto px-6 lg:px-12">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <h2 className="text-4xl md:text-5xl font-heading text-neutral-900 mb-4">
+                Meet Our Instructors
+              </h2>
+              <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
+                Experienced guides on your yoga journey
               </p>
             </motion.div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {instructors.map((instructor, index) => (
+                <motion.div
+                  key={instructor.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="card text-center hover:shadow-lg transition-all"
+                >
+                  {/* Avatar */}
+                  <div className="mb-6 flex justify-center">
+                    {instructor.avatar_url ? (
+                      <img
+                        src={`http://localhost:8080${instructor.avatar_url}`}
+                        alt={instructor.name}
+                        className="w-32 h-32 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-32 h-32 rounded-full bg-neutral-900 flex items-center justify-center">
+                        <span className="text-4xl font-heading text-white">
+                          {getInitials(instructor.name)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Info */}
+                  <h3 className="text-2xl font-heading text-neutral-900 mb-2">
+                    {instructor.name}
+                  </h3>
+                  
+                  {instructor.years_experience > 0 && (
+                    <p className="text-sm text-neutral-500 mb-4">
+                      {instructor.years_experience} {instructor.years_experience === 1 ? 'year' : 'years'} of experience
+                    </p>
+                  )}
+
+                  {instructor.instructor_bio && (
+                    <p className="text-neutral-600 mb-4 leading-relaxed">
+                      {instructor.instructor_bio}
+                    </p>
+                  )}
+
+                  {instructor.instructor_specialties && instructor.instructor_specialties.length > 0 && (
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      {instructor.instructor_specialties.map((specialty, idx) => (
+                        <span
+                          key={idx}
+                          className="px-3 py-1 bg-neutral-100 text-neutral-700 rounded-full text-xs font-medium"
+                        >
+                          {specialty}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </motion.div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* Values Section */}
-      <section className="py-32">
-        <div className="max-w-6xl mx-auto px-8 lg:px-16">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-center mb-20"
-          >
-            <h2 className="text-h2 font-heading text-primary-900 mb-6">
-              Our Values
-            </h2>
-            <p className="text-body-lg text-primary-600 max-w-2xl mx-auto">
-              The principles that guide everything we do
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-12">
-            {[
-              {
-                title: 'Inclusivity',
-                description: 'Everyone is welcome here, regardless of age, ability, or experience level.',
-              },
-              {
-                title: 'Mindfulness',
-                description: 'We practice presence and awareness in every moment, on and off the mat.',
-              },
-              {
-                title: 'Community',
-                description: 'We believe in the power of connection and supporting each other's growth.',
-              },
-              {
-                title: 'Authenticity',
-                description: 'We encourage you to honor your unique journey and practice without judgment.',
-              },
-              {
-                title: 'Growth',
-                description: 'We're committed to continuous learning and evolution, both personally and collectively.',
-              },
-              {
-                title: 'Balance',
-                description: 'We strive for harmony between effort and ease, strength and flexibility.',
-              },
-            ].map((value, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="text-center"
-              >
-                <h3 className="text-2xl font-heading text-primary-900 mb-4">
-                  {value.title}
-                </h3>
-                <p className="text-body text-primary-600 leading-relaxed">
-                  {value.description}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-32 bg-primary-900 text-white">
-        <div className="max-w-4xl mx-auto px-8 lg:px-16 text-center">
+      {/* CTA Section - Smaller */}
+      <section className="py-16 bg-neutral-900 text-white">
+        <div className="max-w-3xl mx-auto px-6 lg:px-12 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-h2 font-heading mb-8">
+            <h2 className="text-3xl md:text-4xl font-heading mb-6">
               Ready to Join Us?
             </h2>
-            <p className="text-body-lg mb-12 opacity-90 max-w-2xl mx-auto">
-              Experience the transformative power of yoga in our welcoming community
+            <p className="text-base md:text-lg mb-8 opacity-90 leading-relaxed">
+              Experience the transformative power of yoga
             </p>
-            <a
-              href="/schedule"
-              className="inline-block bg-white text-primary-900 px-12 py-4 text-sm tracking-wider uppercase hover:bg-primary-100 transition-all duration-300"
-            >
+            <Link to="/schedule" className="btn-outline-light text-base px-8 py-3">
               View Schedule
-            </a>
+            </Link>
           </motion.div>
         </div>
       </section>

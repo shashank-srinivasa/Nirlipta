@@ -7,9 +7,9 @@ const ContentEditor = () => {
   const [activeSection, setActiveSection] = useState('landing-hero');
   const [content, setContent] = useState({
     // Landing page - Hero
-    'landing-hero-title': 'Find Your Inner Peace',
-    'landing-hero-subtitle': 'Transform your mind, body, and spirit through the ancient practice of yoga. Join our community of mindful practitioners.',
-    'landing-cta': 'View Schedule',
+    'landing-hero-title': 'Nirlipta Yoga',
+    'landing-hero-subtitle': 'Find your inner peace through the ancient practice of yoga',
+    'landing-cta': 'Explore Classes',
     
     // Landing page - Features
     'landing-feature1-title': 'Flexible Scheduling',
@@ -22,7 +22,7 @@ const ContentEditor = () => {
     'landing-feature4-desc': 'From beginners to advanced practitioners, everyone is welcome',
     
     // About page
-    'about-story': 'Founded in 2015, Serenity Yoga has been a sanctuary for those seeking balance, wellness, and inner peace. Our experienced instructors guide students of all levels through transformative yoga practices.',
+    'about-story': 'Founded in 2015, Nirlipta Yoga has been a sanctuary for those seeking balance, wellness, and inner peace. Our experienced instructors guide students of all levels through transformative yoga practices.',
     'about-mission': 'Our mission is simple: to make yoga accessible to everyone, regardless of experience level or physical ability. We believe in the healing power of yoga and its ability to transform lives.',
   });
 
@@ -64,18 +64,18 @@ const ContentEditor = () => {
     {
       id: 'landing-hero',
       page: 'Landing Page',
-      title: '🏠 Hero Section',
+      title: 'Hero Section',
       description: 'The first thing visitors see',
       fields: [
-        { key: 'landing-hero-title', label: 'Main Headline', type: 'text', placeholder: 'Find Your Inner Peace' },
-        { key: 'landing-hero-subtitle', label: 'Subtitle', type: 'textarea', placeholder: 'Transform your mind...' },
-        { key: 'landing-cta', label: 'Button Text', type: 'text', placeholder: 'View Schedule' },
+        { key: 'landing-hero-title', label: 'Main Headline', type: 'text', placeholder: 'Nirlipta Yoga' },
+        { key: 'landing-hero-subtitle', label: 'Subtitle', type: 'textarea', placeholder: 'Find your inner peace...' },
+        { key: 'landing-cta', label: 'Button Text', type: 'text', placeholder: 'Explore Classes' },
       ]
     },
     {
       id: 'landing-features',
       page: 'Landing Page',
-      title: '⭐ Features Section',
+      title: 'Features Section',
       description: 'Highlight your studio benefits (4 features)',
       fields: [
         { key: 'landing-feature1-title', label: 'Feature 1 - Title', type: 'text', placeholder: 'Flexible Scheduling' },
@@ -91,7 +91,7 @@ const ContentEditor = () => {
     {
       id: 'about-content',
       page: 'About Page',
-      title: '📖 About Content',
+      title: 'About Content',
       description: 'Tell your story',
       fields: [
         { key: 'about-story', label: 'Our Story', type: 'textarea', placeholder: 'Founded in 2015...' },
@@ -150,28 +150,28 @@ const ContentEditor = () => {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-green-50 text-green-700 p-4 rounded-lg font-medium"
+          className="bg-green-50 text-green-700 p-4 rounded-lg font-medium border border-green-200"
         >
           {success}
         </motion.div>
       )}
 
       {error && (
-        <div className="bg-red-50 text-red-600 p-4 rounded-lg">
+        <div className="bg-red-50 text-red-600 p-4 rounded-lg border border-red-200">
           {error}
         </div>
       )}
 
       {/* Section Tabs */}
-      <div className="flex gap-2 overflow-x-auto pb-2">
+      <div className="flex gap-2 overflow-x-auto pb-2 border-b border-neutral-200">
         {sections.map(section => (
           <button
             key={section.id}
             onClick={() => setActiveSection(section.id)}
-            className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all text-sm ${
+            className={`px-4 py-3 font-medium whitespace-nowrap transition-all text-sm border-b-2 ${
               activeSection === section.id
-                ? 'bg-primary-600 text-white shadow-lg'
-                : 'bg-white text-gray-700 hover:bg-gray-50'
+                ? 'border-neutral-900 text-neutral-900'
+                : 'border-transparent text-neutral-500 hover:text-neutral-900'
             }`}
           >
             {section.title}
@@ -230,10 +230,10 @@ const ContentEditor = () => {
         </div>
 
         {/* Live Preview */}
-        <div className="card bg-gradient-to-br from-primary-50 to-secondary-50 max-h-[700px] overflow-y-auto">
-          <div className="flex items-center gap-2 mb-4 sticky top-0 bg-gradient-to-br from-primary-50 to-secondary-50 pb-2">
-            <FaEye className="text-primary-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Live Preview</h3>
+        <div className="card bg-neutral-50 max-h-[700px] overflow-y-auto border border-neutral-200">
+          <div className="flex items-center gap-2 mb-4 sticky top-0 bg-neutral-50 pb-2">
+            <FaEye className="text-neutral-600" />
+            <h3 className="text-lg font-semibold text-neutral-900">Live Preview</h3>
           </div>
 
           {activeSection === 'landing-hero' && (
@@ -289,9 +289,9 @@ const ContentEditor = () => {
       </div>
 
       {/* Help Text */}
-      <div className="bg-blue-50 p-4 rounded-lg">
-        <p className="text-sm text-blue-800">
-          💡 <strong>Tip:</strong> Edit your website content here. Instructors are managed in the Instructors tab.
+      <div className="bg-neutral-50 p-4 rounded-lg border border-neutral-200">
+        <p className="text-sm text-neutral-700">
+          <strong>Tip:</strong> Edit your website content here. Changes are saved immediately and will appear on your live site.
         </p>
       </div>
     </div>

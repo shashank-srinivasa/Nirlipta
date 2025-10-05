@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { instructorAPI } from '../../services/api';
 
 const ClassForm = ({ initialData = null, onSubmit, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -12,8 +13,21 @@ const ClassForm = ({ initialData = null, onSubmit, onCancel }) => {
     image_url: initialData?.image_url || '',
   });
 
+  const [instructors, setInstructors] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetchInstructors = async () => {
+      try {
+        const response = await instructorAPI.getAll();
+        setInstructors(response.data || []);
+      } catch (err) {
+        console.error('Failed to fetch instructors:', err);
+      }
+    };
+    fetchInstructors();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -89,18 +103,32 @@ const ClassForm = ({ initialData = null, onSubmit, onCancel }) => {
 
         {/* Instructor */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Instructor Name *
+          <label className="block text-sm font-medium text-neutral-900 mb-2">
+            Instructor *
           </label>
-          <input
-            type="text"
-            name="instructor_name"
-            value={formData.instructor_name}
-            onChange={handleChange}
-            required
-            className="input-field"
-            placeholder="e.g., Maya Patel"
-          />
+          {instructors.length > 0 ? (
+            <select
+              name="instructor_name"
+              value={formData.instructor_name}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-3 border-2 border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent text-base"
+            >
+              <option value="">Select an instructor...</option>
+              {instructors.map(instructor => (
+                <option key={instructor.id} value={instructor.name}>
+                  {instructor.name}
+                  {instructor.years_experience > 0 && ` (${instructor.years_experience} yrs exp)`}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-sm text-yellow-800">
+                <strong>No instructors available.</strong> Please mark at least one user as an instructor in the Users tab first.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Duration and Capacity */}

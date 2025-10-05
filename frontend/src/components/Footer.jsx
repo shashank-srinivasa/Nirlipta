@@ -7,10 +7,10 @@ const Footer = () => {
         <div className="grid md:grid-cols-4 gap-12">
           {/* Brand */}
           <div>
-            <h3 className="text-2xl font-heading text-primary-900 mb-4">
-              Serenity
+            <h3 className="text-2xl font-heading text-neutral-900 mb-4">
+              Nirlipta Yoga
             </h3>
-            <p className="text-sm text-primary-600 leading-relaxed">
+            <p className="text-sm text-neutral-600 leading-relaxed">
               Transform your mind, body, and spirit through yoga.
             </p>
           </div>
@@ -64,9 +64,9 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-primary-200 mt-12 pt-8 text-center">
-          <p className="text-sm text-primary-500">
-            © {new Date().getFullYear()} Serenity Yoga Studio. All rights reserved.
+        <div className="border-t border-neutral-200 mt-12 pt-8 text-center">
+          <p className="text-sm text-neutral-500">
+            © {new Date().getFullYear()} Nirlipta Yoga. All rights reserved.
           </p>
         </div>
       </div>

@@ -19,7 +19,10 @@ func Connect() (*gorm.DB, error) {
 		return nil, fmt.Errorf("DATABASE_URL environment variable is required")
 	}
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+	db, err := gorm.Open(postgres.New(postgres.Config{
+		DSN:                  dsn,
+		PreferSimpleProtocol: true, // disables prepared statement cache
+	}), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
 		NowFunc: func() time.Time {
 			return time.Now().UTC()
@@ -46,7 +49,7 @@ func Connect() (*gorm.DB, error) {
 
 func Migrate(db *gorm.DB) error {
 	log.Println("Running database migrations...")
-	
+
 	// AutoMigrate will only add missing columns and tables
 	// It won't modify existing columns or delete unused columns
 	err := db.AutoMigrate(
@@ -65,4 +68,3 @@ func Migrate(db *gorm.DB) error {
 	log.Println("Migrations completed successfully")
 	return nil
 }
-

@@ -22,7 +22,12 @@ const Schedule = () => {
       const response = await schedulesAPI.getAll();
       setSchedules(response.data || []);
     } catch (err) {
-      setError('Failed to fetch schedules. Please try again later.');
+      // If it's a 404 or empty response, just show empty state
+      if (err.response?.status === 404 || !err.response) {
+        setSchedules([]);
+      } else {
+        setError('Failed to fetch schedules. Please try again later.');
+      }
       console.error('Error fetching schedules:', err);
     } finally {
       setLoading(false);
@@ -64,16 +69,16 @@ const Schedule = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-primary-600">Loading schedules...</p>
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <p className="text-lg text-neutral-600">Loading schedules...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-red-600">{error}</p>
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <p className="text-lg text-red-600">{error}</p>
       </div>
     );
   }
@@ -81,17 +86,17 @@ const Schedule = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="py-32 bg-primary-50">
-        <div className="max-w-4xl mx-auto px-8 lg:px-16 text-center">
+      <section className="py-24 bg-white border-b border-neutral-200">
+        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="text-h1 font-heading text-primary-900 mb-8">
+            <h1 className="text-5xl md:text-6xl font-heading text-neutral-900 mb-6">
               Class Schedule
             </h1>
-            <p className="text-body-lg text-primary-600">
+            <p className="text-lg md:text-xl text-neutral-600 max-w-2xl mx-auto">
               Find the perfect class for your journey
             </p>
           </motion.div>
@@ -99,17 +104,17 @@ const Schedule = () => {
       </section>
 
       {/* View Toggle */}
-      <section className="py-8 border-b border-primary-200">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+      <section className="py-6 border-b border-neutral-200 bg-neutral-50">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="flex justify-center gap-8">
             {viewOptions.map((option) => (
               <button
                 key={option.value}
                 onClick={() => setView(option.value)}
-                className={`text-sm tracking-wider uppercase transition-colors pb-2 ${
+                className={`text-sm tracking-wider uppercase transition-colors pb-2 font-medium ${
                   view === option.value
-                    ? 'text-primary-900 border-b-2 border-primary-900'
-                    : 'text-primary-600 hover:text-primary-900'
+                    ? 'text-neutral-900 border-b-2 border-neutral-900'
+                    : 'text-neutral-500 hover:text-neutral-900'
                 }`}
               >
                 {option.label}
@@ -120,45 +125,55 @@ const Schedule = () => {
       </section>
 
       {/* Classes List */}
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+      <section className="py-16">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12">
           {schedules.length === 0 ? (
-            <div className="text-center text-primary-600 py-20">
-              <p className="text-body-lg">No classes scheduled yet. Check back soon!</p>
+            <div className="text-center py-20 card max-w-2xl mx-auto">
+              <h3 className="text-3xl font-heading text-neutral-900 mb-4">
+                No Classes Scheduled Yet
+              </h3>
+              <p className="text-lg text-neutral-600 mb-8 max-w-md mx-auto leading-relaxed">
+                We're currently setting up our class schedule. Please check back soon or contact us for more information.
+              </p>
+              {isAuthenticated && (
+                <p className="text-sm text-neutral-500">
+                  Admins can add classes and schedules from the Admin Dashboard.
+                </p>
+              )}
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-4">
               {schedules.map((scheduleItem, index) => (
                 <motion.div
                   key={scheduleItem.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: index * 0.05 }}
-                  className="border border-primary-200 hover:border-primary-400 transition-all duration-300"
+                  className="card hover:shadow-lg transition-all duration-300"
                 >
-                  <div className="grid lg:grid-cols-12 gap-8 p-8">
+                  <div className="grid lg:grid-cols-12 gap-6">
                     {/* Date/Time */}
                     <div className="lg:col-span-3">
-                      <p className="text-sm tracking-wider uppercase text-primary-500 mb-2">
+                      <p className="text-xs tracking-wider uppercase text-neutral-500 mb-2 font-medium">
                         {getFormattedDate(scheduleItem.start_time)}
                       </p>
-                      <p className="text-body text-primary-900">
+                      <p className="text-lg text-neutral-900 font-medium">
                         {getFormattedTime(scheduleItem.start_time, scheduleItem.end_time)}
                       </p>
                     </div>
 
                     {/* Class Info */}
                     <div className="lg:col-span-6">
-                      <h3 className="text-2xl font-heading text-primary-900 mb-3">
+                      <h3 className="text-2xl font-heading text-neutral-900 mb-2">
                         {scheduleItem.Class.title}
                       </h3>
-                      <p className="text-body text-primary-600 mb-3">
+                      <p className="text-base text-neutral-600 mb-3 leading-relaxed">
                         {scheduleItem.Class.description}
                       </p>
-                      <div className="flex items-center gap-4 text-sm text-primary-600">
-                        <span>Instructor: {scheduleItem.Class.instructor_name}</span>
+                      <div className="flex items-center gap-3 text-sm text-neutral-600">
+                        <span className="font-medium">Instructor: {scheduleItem.Class.instructor_name}</span>
                         <span>•</span>
-                        <span className="uppercase tracking-wider">{scheduleItem.Class.difficulty_level}</span>
+                        <span className="uppercase tracking-wider text-xs">{scheduleItem.Class.difficulty_level}</span>
                         <span>•</span>
                         <span>{scheduleItem.Class.duration} min</span>
                       </div>
@@ -168,20 +183,20 @@ const Schedule = () => {
                     <div className="lg:col-span-3 flex flex-col justify-between items-end">
                       <div className="text-right mb-4">
                         {scheduleItem.Class.capacity - scheduleItem.Enrollments.length > 0 ? (
-                          <p className="text-sm text-primary-600">
+                          <p className="text-sm text-neutral-600">
                             {scheduleItem.Class.capacity - scheduleItem.Enrollments.length} spots available
                           </p>
                         ) : (
-                          <p className="text-sm text-red-600">Class Full</p>
+                          <p className="text-sm text-red-600 font-medium">Class Full</p>
                         )}
                       </div>
                       <button
                         onClick={() => handleEnroll(scheduleItem.id)}
                         disabled={scheduleItem.Class.capacity - scheduleItem.Enrollments.length <= 0}
-                        className={`px-8 py-3 text-sm tracking-wider uppercase transition-all duration-300 ${
+                        className={`px-6 py-2.5 text-sm tracking-wider uppercase transition-all duration-300 font-medium ${
                           scheduleItem.Class.capacity - scheduleItem.Enrollments.length <= 0
-                            ? 'bg-primary-200 text-primary-500 cursor-not-allowed'
-                            : 'bg-primary-900 text-white hover:bg-transparent hover:text-primary-900 border border-primary-900'
+                            ? 'bg-neutral-200 text-neutral-500 cursor-not-allowed rounded-lg'
+                            : 'btn-outline'
                         }`}
                       >
                         {scheduleItem.Class.capacity - scheduleItem.Enrollments.length <= 0 ? 'Full' : 'Enroll'}

@@ -75,16 +75,16 @@ const ClassManagement = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-heading font-bold text-gray-900">
+          <h1 className="text-3xl font-heading font-bold text-neutral-900">
             Class Management
           </h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-neutral-600 mt-1">
             Create and manage yoga classes
           </p>
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="btn-primary flex items-center gap-2"
+          className="bg-neutral-900 text-white px-6 py-3 rounded-lg hover:bg-neutral-700 transition-colors flex items-center gap-2 font-medium"
         >
           <FaPlus />
           Add New Class
@@ -92,7 +92,7 @@ const ClassManagement = () => {
       </div>
 
       {error && (
-        <div className="bg-red-50 text-red-600 p-4 rounded-lg">
+        <div className="bg-red-50 text-red-600 p-4 rounded-lg border border-red-200">
           {error}
         </div>
       )}
@@ -100,21 +100,19 @@ const ClassManagement = () => {
       {/* Classes Grid */}
       {loading ? (
         <div className="text-center py-12">
-          <div className="text-4xl mb-4">🧘</div>
-          <p className="text-gray-600">Loading classes...</p>
+          <p className="text-lg text-neutral-600">Loading classes...</p>
         </div>
       ) : classes.length === 0 ? (
-        <div className="text-center py-12 card">
-          <div className="text-6xl mb-4">📝</div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">
+        <div className="text-center py-16 card">
+          <h3 className="text-2xl font-heading font-semibold text-neutral-900 mb-3">
             No classes yet
           </h3>
-          <p className="text-gray-600 mb-4">
+          <p className="text-neutral-600 mb-6">
             Create your first yoga class to get started
           </p>
           <button
             onClick={() => setShowForm(true)}
-            className="btn-primary"
+            className="bg-neutral-900 text-white px-6 py-3 rounded-lg hover:bg-neutral-700 transition-colors font-medium"
           >
             Create First Class
           </button>
@@ -127,15 +125,15 @@ const ClassManagement = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="card hover:shadow-xl transition-shadow"
+              className="card hover:shadow-lg transition-all"
             >
               {/* Class Info */}
               <div className="mb-4">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-xl font-heading font-semibold text-gray-900">
+                <div className="flex justify-between items-start mb-3">
+                  <h3 className="text-xl font-heading font-semibold text-neutral-900">
                     {classItem.title}
                   </h3>
-                  <span className={`text-xs px-2 py-1 rounded-full ${
+                  <span className={`text-xs px-2.5 py-1 rounded-full uppercase tracking-wider font-medium ${
                     classItem.difficulty_level === 'beginner' ? 'bg-green-100 text-green-700' :
                     classItem.difficulty_level === 'intermediate' ? 'bg-yellow-100 text-yellow-700' :
                     'bg-red-100 text-red-700'
@@ -143,28 +141,28 @@ const ClassManagement = () => {
                     {classItem.difficulty_level}
                   </span>
                 </div>
-                <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                <p className="text-neutral-600 text-sm mb-4 line-clamp-2 leading-relaxed">
                   {classItem.description}
                 </p>
-                <div className="space-y-1 text-sm text-gray-500">
-                  <p>👤 {classItem.instructor_name}</p>
-                  <p>⏱️ {classItem.duration} minutes</p>
-                  <p>👥 Capacity: {classItem.capacity} students</p>
+                <div className="space-y-2 text-sm text-neutral-600">
+                  <p><span className="font-medium">Instructor:</span> {classItem.instructor_name}</p>
+                  <p><span className="font-medium">Duration:</span> {classItem.duration} minutes</p>
+                  <p><span className="font-medium">Capacity:</span> {classItem.capacity} students</p>
                 </div>
               </div>
 
               {/* Actions */}
-              <div className="flex gap-2 pt-4 border-t">
+              <div className="flex gap-2 pt-4 border-t border-neutral-200">
                 <button
                   onClick={() => handleEdit(classItem)}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-primary-50 text-primary-600 rounded-lg hover:bg-primary-100 transition-colors"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-neutral-100 text-neutral-700 rounded-lg hover:bg-neutral-200 transition-colors font-medium"
                 >
                   <FaEdit />
                   Edit
                 </button>
                 <button
                   onClick={() => handleDelete(classItem.id)}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors font-medium"
                 >
                   <FaTrash />
                   Delete

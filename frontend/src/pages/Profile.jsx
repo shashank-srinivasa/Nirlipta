@@ -83,12 +83,19 @@ const Profile = () => {
     }
   };
 
+  const getInitials = (name) => {
+    if (!name) return '?';
+    const parts = name.trim().split(' ');
+    if (parts.length === 1) return parts[0][0].toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="max-w-md text-center px-8">
-          <h2 className="text-h2 font-heading text-primary-900 mb-6">Sign In Required</h2>
-          <p className="text-body text-primary-600 mb-8">Please sign in to view your profile.</p>
+          <h2 className="text-4xl font-heading text-neutral-900 mb-6">Sign In Required</h2>
+          <p className="text-lg text-neutral-600 mb-8">Please sign in to view your profile.</p>
           <button 
             onClick={() => window.location.href = '/api/v1/auth/google'} 
             className="btn-primary"
@@ -110,16 +117,24 @@ const Profile = () => {
           transition={{ duration: 0.6 }}
           className="mb-16"
         >
-          <div className="flex flex-col md:flex-row items-start gap-8 pb-12 border-b border-primary-200">
+          <div className="flex flex-col md:flex-row items-start gap-8 pb-12 border-b border-neutral-200">
             {/* Avatar */}
             <div className="relative">
               <div className="w-32 h-32 relative">
-                <img
-                  src={user?.avatar_url ? `http://localhost:8080${user.avatar_url}` : '/default-avatar.png'}
-                  alt={user?.name || 'User Avatar'}
-                  className="w-full h-full object-cover"
-                />
-                <label className="absolute bottom-0 right-0 bg-primary-900 text-white p-3 cursor-pointer hover:bg-primary-800 transition-colors">
+                {user?.avatar_url ? (
+                  <img
+                    src={`http://localhost:8080${user.avatar_url}`}
+                    alt={user?.name || 'User Avatar'}
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                ) : (
+                  <div className="w-full h-full rounded-full bg-neutral-900 flex items-center justify-center">
+                    <span className="text-4xl font-heading text-white">
+                      {getInitials(user?.name)}
+                    </span>
+                  </div>
+                )}
+                <label className="absolute bottom-0 right-0 bg-neutral-900 text-white p-3 rounded-full cursor-pointer hover:bg-neutral-700 transition-colors shadow-lg">
                   <FaCamera className="text-sm" />
                   <input
                     type="file"
@@ -131,20 +146,20 @@ const Profile = () => {
                 </label>
               </div>
               {uploading && (
-                <p className="text-xs text-primary-600 mt-2">Uploading...</p>
+                <p className="text-xs text-neutral-600 mt-2">Uploading...</p>
               )}
             </div>
 
             {/* Info */}
             <div className="flex-1">
-              <h1 className="text-h2 font-heading text-primary-900 mb-3">
+              <h1 className="text-4xl font-heading text-neutral-900 mb-3">
                 {user?.name || 'Your Name'}
               </h1>
-              <p className="text-body text-primary-600 mb-4">
+              <p className="text-lg text-neutral-600 mb-4">
                 {user?.email || 'email@example.com'}
               </p>
               {user?.is_instructor && (
-                <span className="inline-block text-xs tracking-wider uppercase text-primary-700 border-b border-primary-300">
+                <span className="inline-block px-3 py-1 text-xs tracking-wider uppercase text-neutral-900 bg-neutral-100 rounded-full font-medium">
                   Instructor
                 </span>
               )}
@@ -161,7 +176,7 @@ const Profile = () => {
             className="mb-16"
           >
             <div className="flex justify-between items-center mb-8">
-              <h2 className="text-h3 font-heading text-primary-900">
+              <h2 className="text-3xl font-heading text-neutral-900">
                 Instructor Profile
               </h2>
               {!showBioEditor ? (
@@ -181,7 +196,7 @@ const Profile = () => {
                   </button>
                   <button
                     onClick={handleSaveBio}
-                    className="btn-primary text-sm py-2 px-6"
+                    className="bg-neutral-900 text-white px-6 py-2 text-sm rounded-lg hover:bg-neutral-700 transition-colors"
                   >
                     Save
                   </button>
@@ -192,55 +207,55 @@ const Profile = () => {
             {showBioEditor ? (
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm tracking-wider uppercase text-primary-700 mb-3">
+                  <label className="block text-xs tracking-wider uppercase text-neutral-600 mb-3 font-medium">
                     Biography
                   </label>
                   <textarea
                     value={bioData.instructor_bio}
                     onChange={(e) => setBioData({ ...bioData, instructor_bio: e.target.value })}
                     rows="6"
-                    className="input-field"
+                    className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
                     placeholder="Share your yoga journey..."
                   />
                 </div>
                 <div>
-                  <label className="block text-sm tracking-wider uppercase text-primary-700 mb-3">
+                  <label className="block text-xs tracking-wider uppercase text-neutral-600 mb-3 font-medium">
                     Specialties (comma-separated)
                   </label>
                   <input
                     type="text"
                     value={bioData.instructor_specialties.join(', ')}
                     onChange={(e) => setBioData({ ...bioData, instructor_specialties: e.target.value.split(',').map(s => s.trim()) })}
-                    className="input-field"
+                    className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
                     placeholder="Vinyasa, Hatha, Meditation"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm tracking-wider uppercase text-primary-700 mb-3">
+                  <label className="block text-xs tracking-wider uppercase text-neutral-600 mb-3 font-medium">
                     Years of Experience
                   </label>
                   <input
                     type="number"
                     value={bioData.years_experience}
                     onChange={(e) => setBioData({ ...bioData, years_experience: parseInt(e.target.value) || 0 })}
-                    className="input-field"
+                    className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
                     min="0"
                   />
                 </div>
               </div>
             ) : (
-              <div className="space-y-6 text-primary-600">
+              <div className="space-y-6 text-neutral-600">
                 <div>
-                  <h4 className="text-sm tracking-wider uppercase text-primary-700 mb-2">Biography</h4>
-                  <p className="text-body leading-relaxed">{user?.instructor_bio || 'No bio yet.'}</p>
+                  <h4 className="text-xs tracking-wider uppercase text-neutral-500 mb-2 font-medium">Biography</h4>
+                  <p className="text-base leading-relaxed">{user?.instructor_bio || 'No bio yet.'}</p>
                 </div>
                 <div>
-                  <h4 className="text-sm tracking-wider uppercase text-primary-700 mb-2">Specialties</h4>
-                  <p className="text-body">{user?.instructor_specialties?.join(', ') || 'None specified.'}</p>
+                  <h4 className="text-xs tracking-wider uppercase text-neutral-500 mb-2 font-medium">Specialties</h4>
+                  <p className="text-base">{user?.instructor_specialties?.join(', ') || 'None specified.'}</p>
                 </div>
                 <div>
-                  <h4 className="text-sm tracking-wider uppercase text-primary-700 mb-2">Experience</h4>
-                  <p className="text-body">{user?.years_experience || '0'} years</p>
+                  <h4 className="text-xs tracking-wider uppercase text-neutral-500 mb-2 font-medium">Experience</h4>
+                  <p className="text-base">{user?.years_experience || '0'} years</p>
                 </div>
               </div>
             )}
@@ -253,35 +268,35 @@ const Profile = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          <h2 className="text-h3 font-heading text-primary-900 mb-8">
+          <h2 className="text-3xl font-heading text-neutral-900 mb-8">
             My Enrollments
           </h2>
 
           {enrollments.length === 0 ? (
-            <p className="text-body text-primary-600">You haven't enrolled in any classes yet.</p>
+            <p className="text-lg text-neutral-600">You haven't enrolled in any classes yet.</p>
           ) : (
             <div className="space-y-4">
               {enrollments.map((enrollment) => (
                 <div
                   key={enrollment.id}
-                  className="border border-primary-200 p-6 hover:border-primary-400 transition-all"
+                  className="card hover:shadow-lg transition-all"
                 >
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="text-xl font-heading text-primary-900 mb-2">
+                      <h3 className="text-xl font-heading text-neutral-900 mb-2">
                         {enrollment.Schedule.Class.title}
                       </h3>
-                      <p className="text-body text-primary-600 mb-2">
+                      <p className="text-base text-neutral-600 mb-2">
                         {format(parseISO(enrollment.Schedule.start_time), 'EEEE, MMMM d')} at{' '}
                         {format(parseISO(enrollment.Schedule.start_time), 'h:mm a')}
                       </p>
-                      <p className="text-sm text-primary-500">
+                      <p className="text-sm text-neutral-500">
                         Instructor: {enrollment.Schedule.Class.instructor_name}
                       </p>
                     </div>
                     <button
                       onClick={() => handleCancelEnrollment(enrollment.id)}
-                      className="text-sm text-red-600 hover:text-red-700 tracking-wider uppercase"
+                      className="text-sm text-red-600 hover:text-red-700 tracking-wider uppercase font-medium"
                     >
                       Cancel
                     </button>
