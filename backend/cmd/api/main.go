@@ -45,7 +45,7 @@ func main() {
 	}))
 
 	// Initialize API routes
-	api.SetupRoutes(router, db)
+	api.RegisterRoutes(router, db)
 
 	// Start server
 	port := getEnv("PORT", "8080")

@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func SetupRoutes(router *gin.Engine, db *gorm.DB) {
+func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 	// Health check
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "ok", "message": "Yoga Studio API is running"})
@@ -113,12 +113,12 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 				users.PUT("/:id/role", userHandler.UpdateRole)
 			}
 
-			// Analytics
-			analytics := admin.Group("/analytics")
-			{
-				analyticsHandler := NewAnalyticsHandler(db)
-				analytics.GET("/overview", analyticsHandler.GetOverview)
-			}
+			// Analytics (placeholder for now)
+			// analytics := admin.Group("/analytics")
+			// {
+			// 	analyticsHandler := NewAnalyticsHandler(db)
+			// 	analytics.GET("/overview", analyticsHandler.GetOverview)
+			// }
 		}
 	}
 }
