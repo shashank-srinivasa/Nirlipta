@@ -1,92 +1,72 @@
-import { FaFacebook, FaInstagram, FaTwitter, FaYoutube, FaEnvelope, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
 const Footer = () => {
-  const currentYear = new Date().getFullYear();
-
   return (
-    <footer className="bg-gray-900 text-gray-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* About Section */}
-          <div className="col-span-1 md:col-span-2">
-            <div className="flex items-center space-x-2 mb-4">
-              <span className="text-3xl">🧘</span>
-              <span className="text-2xl font-heading font-bold text-white">
-                Serenity Yoga
-              </span>
-            </div>
-            <p className="text-gray-400 mb-4">
-              Transform your mind, body, and spirit through the ancient practice of yoga. 
-              Join our community and discover inner peace.
+    <footer className="bg-white border-t border-primary-200">
+      <div className="max-w-7xl mx-auto px-8 lg:px-16 py-16">
+        <div className="grid md:grid-cols-4 gap-12">
+          {/* Brand */}
+          <div>
+            <h3 className="text-2xl font-heading text-primary-900 mb-4">
+              Serenity
+            </h3>
+            <p className="text-sm text-primary-600 leading-relaxed">
+              Transform your mind, body, and spirit through yoga.
             </p>
-            <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-primary-400 transition-colors">
-                <FaFacebook size={24} />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-primary-400 transition-colors">
-                <FaInstagram size={24} />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-primary-400 transition-colors">
-                <FaTwitter size={24} />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-primary-400 transition-colors">
-                <FaYoutube size={24} />
-              </a>
-            </div>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-white font-heading font-semibold mb-4">Quick Links</h3>
-            <ul className="space-y-2">
+            <h4 className="text-sm tracking-wider uppercase text-primary-900 mb-4">
+              Navigate
+            </h4>
+            <ul className="space-y-3">
               <li>
-                <Link to="/" className="text-gray-400 hover:text-primary-400 transition-colors">
-                  Home
+                <Link to="/about" className="text-sm text-primary-600 hover:text-primary-900 transition-colors">
+                  About
                 </Link>
               </li>
               <li>
-                <Link to="/about" className="text-gray-400 hover:text-primary-400 transition-colors">
-                  About Us
+                <Link to="/schedule" className="text-sm text-primary-600 hover:text-primary-900 transition-colors">
+                  Schedule
                 </Link>
               </li>
               <li>
-                <Link to="/schedule" className="text-gray-400 hover:text-primary-400 transition-colors">
-                  Class Schedule
-                </Link>
-              </li>
-              <li>
-                <Link to="/profile" className="text-gray-400 hover:text-primary-400 transition-colors">
-                  My Profile
+                <Link to="/profile" className="text-sm text-primary-600 hover:text-primary-900 transition-colors">
+                  Profile
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Contact Info */}
+          {/* Contact */}
           <div>
-            <h3 className="text-white font-heading font-semibold mb-4">Contact Us</h3>
-            <ul className="space-y-3">
-              <li className="flex items-start space-x-3">
-                <FaMapMarkerAlt className="text-primary-400 mt-1" />
-                <span className="text-gray-400">123 Zen Street, Peaceful City, PC 12345</span>
-              </li>
-              <li className="flex items-center space-x-3">
-                <FaPhone className="text-primary-400" />
-                <span className="text-gray-400">+1 (555) 123-4567</span>
-              </li>
-              <li className="flex items-center space-x-3">
-                <FaEnvelope className="text-primary-400" />
-                <span className="text-gray-400">info@serenityyoga.com</span>
-              </li>
+            <h4 className="text-sm tracking-wider uppercase text-primary-900 mb-4">
+              Contact
+            </h4>
+            <ul className="space-y-3 text-sm text-primary-600">
+              <li>hello@serenity.yoga</li>
+              <li>+1 (555) 123-4567</li>
+              <li>123 Wellness Street</li>
+            </ul>
+          </div>
+
+          {/* Hours */}
+          <div>
+            <h4 className="text-sm tracking-wider uppercase text-primary-900 mb-4">
+              Hours
+            </h4>
+            <ul className="space-y-3 text-sm text-primary-600">
+              <li>Mon - Fri: 6am - 9pm</li>
+              <li>Saturday: 7am - 7pm</li>
+              <li>Sunday: 8am - 6pm</li>
             </ul>
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="border-t border-gray-800 mt-8 pt-8 text-center">
-          <p className="text-gray-400">
-            &copy; {currentYear} Serenity Yoga. All rights reserved. Made with ❤️ for yoga enthusiasts.
+        <div className="border-t border-primary-200 mt-12 pt-8 text-center">
+          <p className="text-sm text-primary-500">
+            © {new Date().getFullYear()} Serenity Yoga Studio. All rights reserved.
           </p>
         </div>
       </div>
@@ -95,4 +75,3 @@ const Footer = () => {
 };
 
 export default Footer;
-

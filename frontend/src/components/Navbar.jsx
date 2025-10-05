@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaBars, FaTimes, FaUser, FaSignOutAlt } from 'react-icons/fa';
+import { FaBars, FaTimes, FaUser } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import useAuthStore from '../store/authStore';
 import { authAPI } from '../services/api';
@@ -18,37 +18,30 @@ const Navbar = () => {
   };
 
   const navigation = [
-    { name: 'Home', path: '/' },
     { name: 'About', path: '/about' },
     { name: 'Schedule', path: '/schedule' },
+    { name: 'Profile', path: '/profile' },
   ];
 
-  const isActive = (path) => location.pathname === path;
-
   return (
-    <nav className="bg-white shadow-md sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+    <nav className="bg-white border-b border-primary-200 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-8 lg:px-16">
+        <div className="flex justify-between h-20 items-center">
           {/* Logo */}
-          <div className="flex items-center">
-            <Link to="/" className="flex items-center space-x-2">
-              <span className="text-2xl">🧘</span>
-              <span className="text-2xl font-heading font-bold text-primary-600">
-                Serenity Yoga
-              </span>
-            </Link>
-          </div>
+          <Link to="/" className="text-2xl font-heading text-primary-900 tracking-tight">
+            Serenity
+          </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-12">
             {navigation.map((item) => (
               <Link
-                key={item.path}
+                key={item.name}
                 to={item.path}
-                className={`text-sm font-medium transition-colors duration-200 ${
-                  isActive(item.path)
-                    ? 'text-primary-600 border-b-2 border-primary-600'
-                    : 'text-gray-700 hover:text-primary-600'
+                className={`text-sm tracking-wider uppercase transition-colors ${
+                  location.pathname === item.path
+                    ? 'text-primary-900 border-b border-primary-900'
+                    : 'text-primary-600 hover:text-primary-900'
                 }`}
               >
                 {item.name}
@@ -59,18 +52,18 @@ const Navbar = () => {
               <div className="relative">
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center space-x-2 text-gray-700 hover:text-primary-600 transition-colors"
+                  className="flex items-center space-x-2 text-primary-900 hover:text-primary-700 transition-colors"
                 >
-                  <FaUser />
-                  <span className="text-sm font-medium">{user?.name}</span>
+                  <FaUser className="text-sm" />
+                  <span className="text-sm">{user?.name}</span>
                 </button>
-                
+
                 {showUserMenu && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
+                  <div className="absolute right-0 mt-4 w-56 bg-white border border-primary-200 shadow-lg">
                     <Link
                       to="/profile"
                       onClick={() => setShowUserMenu(false)}
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      className="block px-6 py-3 text-sm text-primary-900 hover:bg-primary-50 transition-colors"
                     >
                       My Profile
                     </Link>
@@ -78,16 +71,15 @@ const Navbar = () => {
                       <Link
                         to="/admin"
                         onClick={() => setShowUserMenu(false)}
-                        className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                        className="block px-6 py-3 text-sm text-primary-900 hover:bg-primary-50 transition-colors"
                       >
                         Admin Dashboard
                       </Link>
                     )}
                     <button
                       onClick={handleLogout}
-                      className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 flex items-center"
+                      className="w-full text-left px-6 py-3 text-sm text-primary-900 hover:bg-primary-50 transition-colors"
                     >
-                      <FaSignOutAlt className="mr-2" />
                       Logout
                     </button>
                   </div>
@@ -96,7 +88,7 @@ const Navbar = () => {
             ) : (
               <button
                 onClick={() => authAPI.googleLogin()}
-                className="btn-primary text-sm py-2 px-4"
+                className="text-sm tracking-wider uppercase text-primary-900 hover:text-primary-700 transition-colors"
               >
                 Sign In
               </button>
@@ -104,36 +96,34 @@ const Navbar = () => {
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden flex items-center">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="text-gray-700 hover:text-primary-600 focus:outline-none"
-            >
-              {isOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
-            </button>
-          </div>
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="md:hidden text-primary-900"
+          >
+            {isOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
+          </button>
         </div>
       </div>
 
-      {/* Mobile Navigation */}
+      {/* Mobile menu */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-white border-t"
+            className="md:hidden bg-white border-t border-primary-200"
           >
-            <div className="px-4 pt-2 pb-4 space-y-2">
+            <div className="px-8 py-6 space-y-4">
               {navigation.map((item) => (
                 <Link
-                  key={item.path}
+                  key={item.name}
                   to={item.path}
                   onClick={() => setIsOpen(false)}
-                  className={`block px-3 py-2 rounded-md text-base font-medium ${
-                    isActive(item.path)
-                      ? 'bg-primary-50 text-primary-600'
-                      : 'text-gray-700 hover:bg-gray-50'
+                  className={`block text-sm tracking-wider uppercase ${
+                    location.pathname === item.path
+                      ? 'text-primary-900'
+                      : 'text-primary-600'
                   }`}
                 >
                   {item.name}
@@ -145,22 +135,37 @@ const Navbar = () => {
                   <Link
                     to="/profile"
                     onClick={() => setIsOpen(false)}
-                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50"
+                    className="block text-sm tracking-wider uppercase text-primary-600"
                   >
-                    Profile
+                    My Profile
                   </Link>
                   {user?.role === 'ADMIN' && (
                     <Link
                       to="/admin"
                       onClick={() => setIsOpen(false)}
-                      className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50"
+                      className="block text-sm tracking-wider uppercase text-primary-600"
                     >
                       Admin Dashboard
                     </Link>
                   )}
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setIsOpen(false);
+                    }}
+                    className="block text-sm tracking-wider uppercase text-primary-600"
+                  >
+                    Logout
+                  </button>
                 </>
               ) : (
-                <button className="w-full btn-primary text-sm py-2">
+                <button
+                  onClick={() => {
+                    authAPI.googleLogin();
+                    setIsOpen(false);
+                  }}
+                  className="block text-sm tracking-wider uppercase text-primary-900"
+                >
                   Sign In
                 </button>
               )}
@@ -173,4 +178,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-
