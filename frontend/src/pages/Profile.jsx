@@ -118,7 +118,7 @@ const Profile = () => {
           <h2 className="text-4xl font-heading text-neutral-900 mb-6">Sign In Required</h2>
           <p className="text-lg text-neutral-600 mb-8">Please sign in to view your profile.</p>
           <button 
-            onClick={() => window.location.href = '/api/v1/auth/google'} 
+            onClick={() => window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/v1/auth/google`} 
             className="btn-primary"
           >
             Sign In
