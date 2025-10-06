@@ -13,7 +13,6 @@ import (
 
 const (
 	maxAge = 86400 * 30 // 30 days
-	isProd = false      // Set to true in production
 )
 
 // InitOAuth initializes OAuth providers (Google, Facebook)
@@ -27,8 +26,17 @@ func InitOAuth() {
 	store.MaxAge(maxAge)
 	store.Options.Path = "/"
 	store.Options.HttpOnly = true
-	store.Options.Secure = isProd
-	store.Options.SameSite = 0 // Allow cross-site for localhost development
+	
+	// Check if we're in production (HTTPS)
+	env := os.Getenv("ENV")
+	isProduction := env == "production"
+	store.Options.Secure = isProduction
+	
+	if isProduction {
+		store.Options.SameSite = 2 // Lax for production
+	} else {
+		store.Options.SameSite = 0 // None for localhost development
+	}
 
 	gothic.Store = store
 
