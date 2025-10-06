@@ -78,8 +78,29 @@ const Profile = () => {
         alert('Enrollment cancelled successfully!');
         fetchEnrollments();
       } catch (err) {
-        alert('Failed to cancel enrollment');
+        const errorMessage = err.response?.data?.error || 'Failed to cancel enrollment';
+        const minutesUntil = err.response?.data?.minutes_until_class;
+        
+        if (minutesUntil !== undefined) {
+          alert(`${errorMessage}\n\nClass starts in ${minutesUntil} minutes. Cancellations must be made at least 1 hour before class.`);
+        } else {
+          alert(errorMessage);
+        }
+        console.error('Failed to cancel enrollment:', err);
       }
+    }
+  };
+  
+  // Check if enrollment can be cancelled (more than 1 hour before class)
+  const canCancelEnrollment = (startTime) => {
+    if (!startTime) return true; // Allow if no start time
+    try {
+      const classStart = parseISO(startTime);
+      const now = new Date();
+      const hoursUntilClass = (classStart - now) / (1000 * 60 * 60);
+      return hoursUntilClass > 1 || hoursUntilClass < 0; // Allow if >1 hour or class passed
+    } catch (err) {
+      return true; // Allow on error
     }
   };
 
@@ -276,33 +297,65 @@ const Profile = () => {
             <p className="text-lg text-neutral-600">You haven't enrolled in any classes yet.</p>
           ) : (
             <div className="space-y-4">
-              {enrollments.map((enrollment) => (
-                <div
-                  key={enrollment.id}
-                  className="card hover:shadow-lg transition-all"
-                >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="text-xl font-heading text-neutral-900 mb-2">
-                        {enrollment.Schedule.Class.title}
-                      </h3>
-                      <p className="text-base text-neutral-600 mb-2">
-                        {format(parseISO(enrollment.Schedule.start_time), 'EEEE, MMMM d')} at{' '}
-                        {format(parseISO(enrollment.Schedule.start_time), 'h:mm a')}
-                      </p>
-                      <p className="text-sm text-neutral-500">
-                        Instructor: {enrollment.Schedule.Class.instructor_name}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => handleCancelEnrollment(enrollment.id)}
-                      className="text-sm text-red-600 hover:text-red-700 tracking-wider uppercase font-medium"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              ))}
+                     {enrollments.map((enrollment) => {
+                       // Safety checks for nested objects
+                       const schedule = enrollment?.schedule || enrollment?.Schedule || {};
+                       const classData = schedule?.class || schedule?.Class || {};
+                       
+                       let formattedDate = 'Date TBD';
+                       let formattedTime = 'Time TBD';
+                       
+                       try {
+                         if (schedule.start_time) {
+                           const startDate = parseISO(schedule.start_time);
+                           if (!isNaN(startDate.getTime())) {
+                             formattedDate = format(startDate, 'EEEE, MMMM d');
+                             formattedTime = format(startDate, 'h:mm a');
+                           }
+                         }
+                       } catch (err) {
+                         console.error('Error formatting enrollment date:', err);
+                       }
+                       
+                       const canCancel = canCancelEnrollment(schedule.start_time);
+                       
+                       return (
+                         <div
+                           key={enrollment.id || Math.random()}
+                           className="card hover:shadow-lg transition-all"
+                         >
+                           <div className="flex justify-between items-start">
+                             <div className="flex-1">
+                               <h3 className="text-xl font-heading text-neutral-900 mb-2">
+                                 {classData.title || 'Untitled Class'}
+                               </h3>
+                               <p className="text-base text-neutral-600 mb-2">
+                                 {formattedDate} at {formattedTime}
+                               </p>
+                               <p className="text-sm text-neutral-500">
+                                 Instructor: {classData.instructor_name || 'TBD'}
+                               </p>
+                               {!canCancel && (
+                                 <p className="text-xs text-amber-600 mt-2">
+                                   ⚠️ Cannot cancel within 1 hour of class start
+                                 </p>
+                               )}
+                             </div>
+                             <button
+                               onClick={() => handleCancelEnrollment(enrollment.id)}
+                               disabled={!canCancel}
+                               className={`text-sm tracking-wider uppercase font-medium ${
+                                 canCancel
+                                   ? 'text-red-600 hover:text-red-700'
+                                   : 'text-neutral-400 cursor-not-allowed'
+                               }`}
+                             >
+                               Cancel
+                             </button>
+                           </div>
+                         </div>
+                       );
+                     })}
             </div>
           )}
         </motion.div>

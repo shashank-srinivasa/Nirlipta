@@ -6,21 +6,13 @@ import ContentEditor from './admin/ContentEditor';
 import UserManagement from './admin/UserManagement';
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('classes');
 
   const tabs = [
-    { id: 'overview', label: 'Overview' },
     { id: 'classes', label: 'Classes' },
     { id: 'schedule', label: 'Schedule' },
     { id: 'content', label: 'Content' },
     { id: 'users', label: 'Users' },
-  ];
-
-  const stats = [
-    { label: 'Total Students', value: '-', change: 'Coming Soon' },
-    { label: 'Active Classes', value: '-', change: 'Coming Soon' },
-    { label: 'This Week', value: '-', change: 'Coming Soon' },
-    { label: 'Instructors', value: '-', change: 'Coming Soon' },
   ];
 
   return (
@@ -56,30 +48,6 @@ const AdminDashboard = () => {
 
           {/* Content */}
           <div>
-            {activeTab === 'overview' && (
-              <div>
-                <h2 className="text-3xl font-heading text-neutral-900 mb-8">
-                  Studio Overview
-                </h2>
-                <div className="grid md:grid-cols-4 gap-6 mb-12">
-                  {stats.map((stat, index) => (
-                    <div key={index} className="card">
-                      <p className="text-xs tracking-wider uppercase text-neutral-500 mb-2 font-medium">
-                        {stat.label}
-                      </p>
-                      <p className="text-4xl font-heading text-neutral-900 mb-2">
-                        {stat.value}
-                      </p>
-                      <p className="text-sm text-neutral-500">{stat.change}</p>
-                    </div>
-                  ))}
-                </div>
-                <div className="card text-center py-16">
-                  <p className="text-neutral-600">Analytics and reporting features coming soon</p>
-                </div>
-              </div>
-            )}
-
             {activeTab === 'classes' && <ClassManagement />}
             {activeTab === 'schedule' && <ScheduleManagement />}
             {activeTab === 'content' && <ContentEditor />}

@@ -8,26 +8,77 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 30000, // 30 second timeout
 });
 
 // Add token to requests if it exists
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+api.interceptors.request.use(
+  (config) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (err) {
+      console.error('Error accessing localStorage:', err);
+    }
+    return config;
+  },
+  (error) => {
+    console.error('Request interceptor error:', error);
+    return Promise.reject(error);
   }
-  return config;
-});
+);
 
-// Handle 401 errors (unauthorized)
+// Handle errors and retries
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
+
+    // Log error for debugging
+    console.error('API Error:', {
+      url: error.config?.url,
+      method: error.config?.method,
+      status: error.response?.status,
+      message: error.message,
+    });
+
+    // Handle 401 errors (unauthorized)
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('auth-storage');
-      window.location.href = '/';
+      try {
+        localStorage.removeItem('token');
+        localStorage.removeItem('auth-storage');
+      } catch (err) {
+        console.error('Error clearing localStorage:', err);
+      }
+      
+      // Only redirect if not already on home page
+      if (window.location.pathname !== '/') {
+        window.location.href = '/';
+      }
+      return Promise.reject(error);
     }
+
+    // Retry logic for network errors or 5xx errors
+    if (
+      (!error.response || error.response.status >= 500) &&
+      !originalRequest._retry &&
+      originalRequest.method === 'get'
+    ) {
+      originalRequest._retry = true;
+      
+      // Wait 1 second before retrying
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      try {
+        return await api(originalRequest);
+      } catch (retryError) {
+        console.error('Retry failed:', retryError);
+        return Promise.reject(retryError);
+      }
+    }
+
     return Promise.reject(error);
   }
 );

@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -127,6 +128,12 @@ func NewClassHandler(db *gorm.DB) *ClassHandler {
 func (h *ClassHandler) GetAll(c *gin.Context) {
 	var classes []models.Class
 
+	if h.db == nil {
+		log.Println("ERROR: Database connection is nil in GetAll")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database connection error"})
+		return
+	}
+
 	query := h.db.Where("is_active = ?", true)
 
 	// Optional filters
@@ -135,8 +142,14 @@ func (h *ClassHandler) GetAll(c *gin.Context) {
 	}
 
 	if err := query.Order("created_at DESC").Find(&classes).Error; err != nil {
+		log.Printf("ERROR: Failed to fetch classes: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch classes"})
 		return
+	}
+
+	// Return empty array instead of null
+	if classes == nil {
+		classes = []models.Class{}
 	}
 
 	c.JSON(http.StatusOK, classes)
@@ -145,9 +158,22 @@ func (h *ClassHandler) GetAll(c *gin.Context) {
 func (h *ClassHandler) GetByID(c *gin.Context) {
 	id := c.Param("id")
 
+	// Validate UUID
+	if _, err := uuid.Parse(id); err != nil {
+		log.Printf("ERROR: Invalid UUID format for class ID: %s", id)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid class ID format"})
+		return
+	}
+
 	var class models.Class
 	if err := h.db.First(&class, "id = ?", id).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Class not found"})
+		if err == gorm.ErrRecordNotFound {
+			log.Printf("WARN: Class not found with ID: %s", id)
+			c.JSON(http.StatusNotFound, gin.H{"error": "Class not found"})
+		} else {
+			log.Printf("ERROR: Database error fetching class: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch class"})
+		}
 		return
 	}
 
@@ -158,7 +184,15 @@ func (h *ClassHandler) Create(c *gin.Context) {
 	var input models.Class
 
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		log.Printf("ERROR: Invalid JSON for class creation: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request data"})
+		return
+	}
+
+	// Validate required fields
+	if input.Title == "" || input.InstructorName == "" {
+		log.Println("ERROR: Missing required fields for class creation")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Title and instructor name are required"})
 		return
 	}
 
@@ -166,45 +200,79 @@ func (h *ClassHandler) Create(c *gin.Context) {
 	input.IsActive = true
 
 	if err := h.db.Create(&input).Error; err != nil {
+		log.Printf("ERROR: Failed to create class: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create class"})
 		return
 	}
 
+	log.Printf("INFO: Class created successfully: %s (ID: %s)", input.Title, input.ID)
 	c.JSON(http.StatusCreated, input)
 }
 
 func (h *ClassHandler) Update(c *gin.Context) {
 	id := c.Param("id")
 
+	// Validate UUID
+	if _, err := uuid.Parse(id); err != nil {
+		log.Printf("ERROR: Invalid UUID format for class update: %s", id)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid class ID format"})
+		return
+	}
+
 	var class models.Class
 	if err := h.db.First(&class, "id = ?", id).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Class not found"})
+		if err == gorm.ErrRecordNotFound {
+			log.Printf("WARN: Class not found for update: %s", id)
+			c.JSON(http.StatusNotFound, gin.H{"error": "Class not found"})
+		} else {
+			log.Printf("ERROR: Database error in class update: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch class"})
+		}
 		return
 	}
 
 	var input models.Class
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		log.Printf("ERROR: Invalid JSON for class update: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request data"})
 		return
 	}
 
 	if err := h.db.Model(&class).Updates(input).Error; err != nil {
+		log.Printf("ERROR: Failed to update class: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update class"})
 		return
 	}
 
+	log.Printf("INFO: Class updated successfully: %s", id)
 	c.JSON(http.StatusOK, class)
 }
 
 func (h *ClassHandler) Delete(c *gin.Context) {
 	id := c.Param("id")
 
+	// Validate UUID
+	if _, err := uuid.Parse(id); err != nil {
+		log.Printf("ERROR: Invalid UUID format for class delete: %s", id)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid class ID format"})
+		return
+	}
+
 	// Soft delete by setting is_active to false
-	if err := h.db.Model(&models.Class{}).Where("id = ?", id).Update("is_active", false).Error; err != nil {
+	result := h.db.Model(&models.Class{}).Where("id = ?", id).Update("is_active", false)
+	if result.Error != nil {
+		log.Printf("ERROR: Failed to delete class: %v", result.Error)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete class"})
 		return
 	}
 
+	if result.RowsAffected == 0 {
+		log.Printf("WARN: Class not found for deletion: %s", id)
+		c.JSON(http.StatusNotFound, gin.H{"error": "Class not found"})
+		return
+	}
+
+	log.Printf("INFO: Class deleted successfully: %s", id)
 	c.JSON(http.StatusOK, gin.H{"message": "Class deleted successfully"})
 }
 
@@ -220,7 +288,14 @@ func NewScheduleHandler(db *gorm.DB) *ScheduleHandler {
 func (h *ScheduleHandler) GetAll(c *gin.Context) {
 	var schedules []models.Schedule
 
-	query := h.db.Preload("Class")
+	if h.db == nil {
+		log.Println("ERROR: Database connection is nil in Schedule GetAll")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database connection error"})
+		return
+	}
+
+	// Preload Class with condition to only load active classes
+	query := h.db.Preload("Class", "is_active = ?", true).Preload("Enrollments")
 
 	// Filter by date range if provided
 	if startDate := c.Query("start_date"); startDate != "" {
@@ -232,15 +307,33 @@ func (h *ScheduleHandler) GetAll(c *gin.Context) {
 
 	// Filter by class if provided
 	if classID := c.Query("class_id"); classID != "" {
+		// Validate UUID
+		if _, err := uuid.Parse(classID); err != nil {
+			log.Printf("ERROR: Invalid UUID format for class_id filter: %s", classID)
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid class ID format"})
+			return
+		}
 		query = query.Where("class_id = ?", classID)
 	}
 
 	if err := query.Order("start_time ASC").Find(&schedules).Error; err != nil {
+		log.Printf("ERROR: Failed to fetch schedules: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch schedules"})
 		return
 	}
 
-	c.JSON(http.StatusOK, schedules)
+	// Filter out schedules with deleted/inactive classes
+	activeSchedules := []models.Schedule{}
+	for _, schedule := range schedules {
+		// Check if Class was loaded (ID is not nil)
+		if schedule.Class.ID != uuid.Nil && schedule.Class.IsActive {
+			activeSchedules = append(activeSchedules, schedule)
+		} else {
+			log.Printf("WARN: Skipping schedule %s - associated class is inactive or not found", schedule.ID)
+		}
+	}
+
+	c.JSON(http.StatusOK, activeSchedules)
 }
 
 func (h *ScheduleHandler) GetByID(c *gin.Context) {
@@ -258,16 +351,43 @@ func (h *ScheduleHandler) GetByID(c *gin.Context) {
 func (h *ScheduleHandler) Create(c *gin.Context) {
 	userID := c.GetString("user_id")
 
+	if userID == "" {
+		log.Println("ERROR: user_id not found in context for schedule creation")
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
 	var input models.Schedule
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		log.Printf("ERROR: Invalid JSON for schedule creation: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request data"})
+		return
+	}
+
+	// Validate class exists
+	var class models.Class
+	if err := h.db.First(&class, "id = ?", input.ClassID).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			log.Printf("WARN: Class not found for schedule: %s", input.ClassID)
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Class not found"})
+		} else {
+			log.Printf("ERROR: Database error checking class: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to validate class"})
+		}
 		return
 	}
 
 	// Set created_by to current admin user
-	input.CreatedBy, _ = uuid.Parse(userID)
+	parsedUserID, err := uuid.Parse(userID)
+	if err != nil {
+		log.Printf("ERROR: Invalid user_id format: %s", userID)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user ID"})
+		return
+	}
+	input.CreatedBy = parsedUserID
 
 	if err := h.db.Create(&input).Error; err != nil {
+		log.Printf("ERROR: Failed to create schedule: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create schedule"})
 		return
 	}
@@ -275,6 +395,7 @@ func (h *ScheduleHandler) Create(c *gin.Context) {
 	// Load the class information
 	h.db.Preload("Class").First(&input, input.ID)
 
+	log.Printf("INFO: Schedule created successfully for class: %s", input.ClassID)
 	c.JSON(http.StatusCreated, input)
 }
 
@@ -324,24 +445,52 @@ func NewEnrollmentHandler(db *gorm.DB) *EnrollmentHandler {
 func (h *EnrollmentHandler) Create(c *gin.Context) {
 	userID := c.GetString("user_id")
 
+	if userID == "" {
+		log.Println("ERROR: user_id not found in context for enrollment")
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
 	var input struct {
 		ScheduleID string `json:"schedule_id" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		log.Printf("ERROR: Invalid JSON for enrollment: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request data"})
+		return
+	}
+
+	// Validate schedule ID format
+	if _, err := uuid.Parse(input.ScheduleID); err != nil {
+		log.Printf("ERROR: Invalid schedule ID format: %s", input.ScheduleID)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid schedule ID format"})
 		return
 	}
 
 	// Check if schedule exists and has capacity
 	var schedule models.Schedule
 	if err := h.db.Preload("Class").Preload("Enrollments").First(&schedule, "id = ?", input.ScheduleID).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Schedule not found"})
+		if err == gorm.ErrRecordNotFound {
+			log.Printf("WARN: Schedule not found for enrollment: %s", input.ScheduleID)
+			c.JSON(http.StatusNotFound, gin.H{"error": "Schedule not found"})
+		} else {
+			log.Printf("ERROR: Database error fetching schedule: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch schedule"})
+		}
+		return
+	}
+
+	// Check if Class is loaded
+	if schedule.Class.ID == uuid.Nil {
+		log.Printf("ERROR: Class not loaded for schedule: %s", input.ScheduleID)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Schedule configuration error"})
 		return
 	}
 
 	// Check capacity
 	if len(schedule.Enrollments) >= schedule.Class.Capacity {
+		log.Printf("WARN: Class full for schedule: %s", input.ScheduleID)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Class is full"})
 		return
 	}
@@ -350,25 +499,46 @@ func (h *EnrollmentHandler) Create(c *gin.Context) {
 	var existing models.Enrollment
 	result := h.db.Where("user_id = ? AND schedule_id = ?", userID, input.ScheduleID).First(&existing)
 	if result.Error == nil {
+		log.Printf("WARN: User already enrolled: user=%s, schedule=%s", userID, input.ScheduleID)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Already enrolled in this class"})
+		return
+	}
+
+	// Parse user ID
+	parsedUserID, err := uuid.Parse(userID)
+	if err != nil {
+		log.Printf("ERROR: Invalid user_id format: %s", userID)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	parsedScheduleID, err := uuid.Parse(input.ScheduleID)
+	if err != nil {
+		log.Printf("ERROR: Invalid schedule_id format: %s", input.ScheduleID)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid schedule ID"})
 		return
 	}
 
 	// Create enrollment
 	enrollment := models.Enrollment{
-		UserID:        uuid.MustParse(userID),
-		ScheduleID:    uuid.MustParse(input.ScheduleID),
+		UserID:        parsedUserID,
+		ScheduleID:    parsedScheduleID,
 		PaymentStatus: models.PaymentCompleted, // Free for now
 	}
 
 	if err := h.db.Create(&enrollment).Error; err != nil {
+		log.Printf("ERROR: Failed to create enrollment: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create enrollment"})
 		return
 	}
 
 	// Load relationships
-	h.db.Preload("Schedule.Class").First(&enrollment, enrollment.ID)
+	if err := h.db.Preload("Schedule.Class").First(&enrollment, enrollment.ID).Error; err != nil {
+		log.Printf("WARN: Failed to load enrollment relationships: %v", err)
+		// Still return success since enrollment was created
+	}
 
+	log.Printf("INFO: Enrollment created: user=%s, schedule=%s", userID, input.ScheduleID)
 	c.JSON(http.StatusCreated, enrollment)
 }
 
@@ -388,18 +558,65 @@ func (h *EnrollmentHandler) Cancel(c *gin.Context) {
 	userID := c.GetString("user_id")
 	enrollmentID := c.Param("id")
 
-	// Verify ownership
-	var enrollment models.Enrollment
-	if err := h.db.Where("id = ? AND user_id = ?", enrollmentID, userID).First(&enrollment).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Enrollment not found"})
+	if userID == "" {
+		log.Println("ERROR: user_id not found in context for enrollment cancellation")
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
+	// Validate enrollment ID
+	if _, err := uuid.Parse(enrollmentID); err != nil {
+		log.Printf("ERROR: Invalid enrollment ID format: %s", enrollmentID)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid enrollment ID format"})
+		return
+	}
+
+	// Verify ownership and load schedule
+	var enrollment models.Enrollment
+	if err := h.db.Preload("Schedule").Where("id = ? AND user_id = ?", enrollmentID, userID).First(&enrollment).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			log.Printf("WARN: Enrollment not found or unauthorized: enrollment=%s, user=%s", enrollmentID, userID)
+			c.JSON(http.StatusNotFound, gin.H{"error": "Enrollment not found"})
+		} else {
+			log.Printf("ERROR: Database error fetching enrollment: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch enrollment"})
+		}
+		return
+	}
+
+	// Check if schedule exists
+	if enrollment.Schedule.ID == uuid.Nil {
+		log.Printf("ERROR: Schedule not loaded for enrollment: %s", enrollmentID)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Enrollment configuration error"})
+		return
+	}
+
+	// Check if cancellation is within 1 hour of class start
+	now := time.Now()
+	classStartTime := enrollment.Schedule.StartTime
+	timeUntilClass := classStartTime.Sub(now)
+
+	if timeUntilClass < time.Hour && timeUntilClass > 0 {
+		log.Printf("WARN: Cancellation denied - within 1 hour of class: enrollment=%s, time_until_class=%v", enrollmentID, timeUntilClass)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":               "Cannot cancel within 1 hour of class start time",
+			"minutes_until_class": int(timeUntilClass.Minutes()),
+		})
+		return
+	}
+
+	// Allow cancellation if class has already started or passed (for cleanup)
+	if timeUntilClass < 0 {
+		log.Printf("WARN: Cancelling enrollment for past class: enrollment=%s", enrollmentID)
+	}
+
 	if err := h.db.Delete(&enrollment).Error; err != nil {
+		log.Printf("ERROR: Failed to cancel enrollment: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to cancel enrollment"})
 		return
 	}
 
+	log.Printf("INFO: Enrollment cancelled successfully: enrollment=%s, user=%s", enrollmentID, userID)
 	c.JSON(http.StatusOK, gin.H{"message": "Enrollment cancelled successfully"})
 }
 

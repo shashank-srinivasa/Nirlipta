@@ -8,10 +8,17 @@ const ScheduleManagement = () => {
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  
+  // Get tomorrow's date as default
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const defaultDate = tomorrow.toISOString().split('T')[0];
+  
   const [formData, setFormData] = useState({
     class_id: '',
-    start_time: '',
-    end_time: '',
+    date: defaultDate,
+    start_time: '09:00',
+    end_time: '10:00',
     recurrence_type: 'once',
     day_of_week: null,
     day_of_month: null,
@@ -38,20 +45,84 @@ const ScheduleManagement = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
     try {
-      await adminAPI.createSchedule(formData);
+      // Combine date and time into ISO 8601 format
+      const startDateTime = new Date(`${formData.date}T${formData.start_time}`);
+      const endDateTime = new Date(`${formData.date}T${formData.end_time}`);
+      
+      const payload = {
+        class_id: formData.class_id,
+        start_time: startDateTime.toISOString(),
+        end_time: endDateTime.toISOString(),
+        recurrence_type: formData.recurrence_type,
+        day_of_week: formData.day_of_week,
+        day_of_month: formData.day_of_month,
+      };
+
+      console.log('Creating schedule with payload:', payload);
+      
+      await adminAPI.createSchedule(payload);
+      
+      alert('Schedule created successfully!');
       setShowForm(false);
+      
+      // Reset with smart defaults
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
       setFormData({
         class_id: '',
-        start_time: '',
-        end_time: '',
+        date: tomorrow.toISOString().split('T')[0],
+        start_time: '09:00',
+        end_time: '10:00',
         recurrence_type: 'once',
         day_of_week: null,
         day_of_month: null,
       });
       fetchData();
     } catch (err) {
-      alert('Failed to create schedule');
+      console.error('Failed to create schedule:', err);
+      const errorMessage = err.response?.data?.error || 'Failed to create schedule. Please try again.';
+      alert(errorMessage);
+    }
+  };
+  
+  // Auto-calculate end time based on class duration
+  const handleClassChange = (classId) => {
+    setFormData({...formData, class_id: classId});
+    
+    const selectedClass = classes.find(c => c.id === classId);
+    if (selectedClass && formData.start_time) {
+      // Calculate end time based on duration
+      const [hours, minutes] = formData.start_time.split(':');
+      const startMinutes = parseInt(hours) * 60 + parseInt(minutes);
+      const endMinutes = startMinutes + selectedClass.duration;
+      const endHours = Math.floor(endMinutes / 60);
+      const endMins = endMinutes % 60;
+      setFormData(prev => ({
+        ...prev,
+        class_id: classId,
+        end_time: `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`
+      }));
+    }
+  };
+  
+  // Auto-update end time when start time changes
+  const handleStartTimeChange = (time) => {
+    setFormData(prev => ({...prev, start_time: time}));
+    
+    const selectedClass = classes.find(c => c.id === formData.class_id);
+    if (selectedClass) {
+      const [hours, minutes] = time.split(':');
+      const startMinutes = parseInt(hours) * 60 + parseInt(minutes);
+      const endMinutes = startMinutes + selectedClass.duration;
+      const endHours = Math.floor(endMinutes / 60);
+      const endMins = endMinutes % 60;
+      setFormData(prev => ({
+        ...prev,
+        start_time: time,
+        end_time: `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`
+      }));
     }
   };
 
@@ -97,11 +168,11 @@ const ScheduleManagement = () => {
           {/* Select Class - Enhanced */}
           <div className="card">
             <label className="block text-sm font-medium text-neutral-900 mb-3">
-              Select Class
+              Select Class *
             </label>
             <select
               value={formData.class_id}
-              onChange={(e) => setFormData({...formData, class_id: e.target.value})}
+              onChange={(e) => handleClassChange(e.target.value)}
               required
               className="w-full px-4 py-3 border-2 border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent text-base"
             >
@@ -117,6 +188,7 @@ const ScheduleManagement = () => {
                 <p><span className="font-medium">Duration:</span> {selectedClass.duration} minutes</p>
                 <p><span className="font-medium">Level:</span> {selectedClass.difficulty_level}</p>
                 <p><span className="font-medium">Capacity:</span> {selectedClass.capacity} students</p>
+                <p className="mt-2 text-xs text-neutral-500">💡 End time will be auto-calculated based on duration</p>
               </div>
             )}
           </div>
@@ -124,16 +196,32 @@ const ScheduleManagement = () => {
           {/* Date & Time Section */}
           <div className="card">
             <h3 className="text-sm font-medium text-neutral-900 mb-4">Date & Time</h3>
+            
+            {/* Date */}
+            <div className="mb-4">
+              <label className="block text-sm text-neutral-600 mb-2">
+                Date *
+              </label>
+              <input
+                type="date"
+                value={formData.date}
+                onChange={(e) => setFormData({...formData, date: e.target.value})}
+                min={new Date().toISOString().split('T')[0]}
+                required
+                className="w-full px-4 py-3 border-2 border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent text-base"
+              />
+            </div>
+            
             <div className="grid md:grid-cols-2 gap-4">
               {/* Start Time */}
               <div>
                 <label className="block text-sm text-neutral-600 mb-2">
-                  Start
+                  Start Time *
                 </label>
                 <input
-                  type="datetime-local"
+                  type="time"
                   value={formData.start_time}
-                  onChange={(e) => setFormData({...formData, start_time: e.target.value})}
+                  onChange={(e) => handleStartTimeChange(e.target.value)}
                   required
                   className="w-full px-4 py-3 border-2 border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent text-base"
                 />
@@ -142,10 +230,10 @@ const ScheduleManagement = () => {
               {/* End Time */}
               <div>
                 <label className="block text-sm text-neutral-600 mb-2">
-                  End
+                  End Time * {selectedClass && <span className="text-xs text-neutral-500">(auto-calculated)</span>}
                 </label>
                 <input
-                  type="datetime-local"
+                  type="time"
                   value={formData.end_time}
                   onChange={(e) => setFormData({...formData, end_time: e.target.value})}
                   required
@@ -242,7 +330,7 @@ const ScheduleManagement = () => {
             onClick={() => setShowForm(true)}
             className="bg-neutral-900 text-white px-6 py-3 rounded-lg hover:bg-neutral-700 transition-colors font-medium"
           >
-            Schedule First Class
+            Schedule Class
           </button>
         </div>
       ) : (

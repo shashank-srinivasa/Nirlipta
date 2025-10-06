@@ -110,12 +110,12 @@ const ClassManagement = () => {
           <p className="text-neutral-600 mb-6">
             Create your first yoga class to get started
           </p>
-          <button
-            onClick={() => setShowForm(true)}
-            className="bg-neutral-900 text-white px-6 py-3 rounded-lg hover:bg-neutral-700 transition-colors font-medium"
-          >
-            Create First Class
-          </button>
+               <button
+                 onClick={() => setShowForm(true)}
+                 className="bg-neutral-900 text-white px-6 py-3 rounded-lg hover:bg-neutral-700 transition-colors font-medium"
+               >
+                 Create Class
+               </button>
         </div>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

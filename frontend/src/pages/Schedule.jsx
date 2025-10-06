@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { schedulesAPI, enrollmentAPI } from '../services/api';
 import useAuthStore from '../store/authStore';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 
 const Schedule = () => {
   const [view, setView] = useState('weekly');
@@ -51,14 +51,32 @@ const Schedule = () => {
   };
 
   const getFormattedTime = (startTime, endTime) => {
-    const start = parseISO(startTime);
-    const end = parseISO(endTime);
-    return `${format(start, 'h:mm a')} - ${format(end, 'h:mm a')}`;
+    try {
+      if (!startTime || !endTime) return 'Time TBD';
+      const start = parseISO(startTime);
+      const end = parseISO(endTime);
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+        return 'Time TBD';
+      }
+      return `${format(start, 'h:mm a')} - ${format(end, 'h:mm a')}`;
+    } catch (err) {
+      console.error('Error formatting time:', err);
+      return 'Time TBD';
+    }
   };
 
   const getFormattedDate = (startTime) => {
-    const date = parseISO(startTime);
-    return format(date, 'EEEE, MMMM d');
+    try {
+      if (!startTime) return 'Date TBD';
+      const date = parseISO(startTime);
+      if (isNaN(date.getTime())) {
+        return 'Date TBD';
+      }
+      return format(date, 'EEEE, MMMM d');
+    } catch (err) {
+      console.error('Error formatting date:', err);
+      return 'Date TBD';
+    }
   };
 
   const viewOptions = [
@@ -66,6 +84,43 @@ const Schedule = () => {
     { value: 'weekly', label: 'Weekly' },
     { value: 'monthly', label: 'Monthly' },
   ];
+
+  // Filter schedules based on selected view
+  const getFilteredSchedules = () => {
+    const now = new Date();
+    
+    return schedules.filter(schedule => {
+      try {
+        if (!schedule.start_time) return false;
+        const scheduleDate = parseISO(schedule.start_time);
+        
+        switch (view) {
+          case 'daily':
+            return isWithinInterval(scheduleDate, {
+              start: startOfDay(now),
+              end: endOfDay(now)
+            });
+          case 'weekly':
+            return isWithinInterval(scheduleDate, {
+              start: startOfWeek(now, { weekStartsOn: 0 }), // Sunday
+              end: endOfWeek(now, { weekStartsOn: 0 })
+            });
+          case 'monthly':
+            return isWithinInterval(scheduleDate, {
+              start: startOfMonth(now),
+              end: endOfMonth(now)
+            });
+          default:
+            return true;
+        }
+      } catch (err) {
+        console.error('Error filtering schedule:', err);
+        return false;
+      }
+    });
+  };
+
+  const filteredSchedules = getFilteredSchedules();
 
   if (loading) {
     return (
@@ -124,10 +179,10 @@ const Schedule = () => {
         </div>
       </section>
 
-      {/* Classes List */}
-      <section className="py-16">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12">
-          {schedules.length === 0 ? (
+          {/* Classes List */}
+          <section className="py-16">
+            <div className="max-w-7xl mx-auto px-6 lg:px-12">
+              {filteredSchedules.length === 0 ? (
             <div className="text-center py-20 card max-w-2xl mx-auto">
               <h3 className="text-3xl font-heading text-neutral-900 mb-4">
                 No Classes Scheduled Yet
@@ -141,72 +196,98 @@ const Schedule = () => {
                 </p>
               )}
             </div>
-          ) : (
-            <div className="space-y-4">
-              {schedules.map((scheduleItem, index) => (
-                <motion.div
-                  key={scheduleItem.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: index * 0.05 }}
-                  className="card hover:shadow-lg transition-all duration-300"
-                >
-                  <div className="grid lg:grid-cols-12 gap-6">
-                    {/* Date/Time */}
-                    <div className="lg:col-span-3">
-                      <p className="text-xs tracking-wider uppercase text-neutral-500 mb-2 font-medium">
-                        {getFormattedDate(scheduleItem.start_time)}
-                      </p>
-                      <p className="text-lg text-neutral-900 font-medium">
-                        {getFormattedTime(scheduleItem.start_time, scheduleItem.end_time)}
-                      </p>
-                    </div>
+                 ) : (
+                   <div className="space-y-4">
+                     {filteredSchedules.map((scheduleItem, index) => {
+                       // Safety checks for nested objects
+                       const classData = scheduleItem?.class || scheduleItem?.Class || {};
+                       const enrollments = scheduleItem?.enrollments || scheduleItem?.Enrollments || [];
+                       const spotsAvailable = (classData.capacity || 0) - enrollments.length;
 
-                    {/* Class Info */}
-                    <div className="lg:col-span-6">
-                      <h3 className="text-2xl font-heading text-neutral-900 mb-2">
-                        {scheduleItem.Class.title}
-                      </h3>
-                      <p className="text-base text-neutral-600 mb-3 leading-relaxed">
-                        {scheduleItem.Class.description}
-                      </p>
-                      <div className="flex items-center gap-3 text-sm text-neutral-600">
-                        <span className="font-medium">Instructor: {scheduleItem.Class.instructor_name}</span>
-                        <span>•</span>
-                        <span className="uppercase tracking-wider text-xs">{scheduleItem.Class.difficulty_level}</span>
-                        <span>•</span>
-                        <span>{scheduleItem.Class.duration} min</span>
-                      </div>
-                    </div>
+                       // Check if class has already started or passed
+                       let hasStarted = false;
+                       try {
+                         if (scheduleItem.start_time) {
+                           const startTime = parseISO(scheduleItem.start_time);
+                           hasStarted = startTime <= new Date();
+                         }
+                       } catch (err) {
+                         console.error('Error checking class start time:', err);
+                       }
 
-                    {/* Enrollment */}
-                    <div className="lg:col-span-3 flex flex-col justify-between items-end">
-                      <div className="text-right mb-4">
-                        {scheduleItem.Class.capacity - scheduleItem.Enrollments.length > 0 ? (
-                          <p className="text-sm text-neutral-600">
-                            {scheduleItem.Class.capacity - scheduleItem.Enrollments.length} spots available
-                          </p>
-                        ) : (
-                          <p className="text-sm text-red-600 font-medium">Class Full</p>
-                        )}
-                      </div>
-                      <button
-                        onClick={() => handleEnroll(scheduleItem.id)}
-                        disabled={scheduleItem.Class.capacity - scheduleItem.Enrollments.length <= 0}
-                        className={`px-6 py-2.5 text-sm tracking-wider uppercase transition-all duration-300 font-medium ${
-                          scheduleItem.Class.capacity - scheduleItem.Enrollments.length <= 0
-                            ? 'bg-neutral-200 text-neutral-500 cursor-not-allowed rounded-lg'
-                            : 'btn-outline'
-                        }`}
-                      >
-                        {scheduleItem.Class.capacity - scheduleItem.Enrollments.length <= 0 ? 'Full' : 'Enroll'}
-                      </button>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          )}
+                       const canEnroll = spotsAvailable > 0 && !hasStarted;
+
+                       return (
+                         <motion.div
+                           key={scheduleItem.id || index}
+                           initial={{ opacity: 0, y: 20 }}
+                           animate={{ opacity: 1, y: 0 }}
+                           transition={{ duration: 0.4, delay: index * 0.05 }}
+                           className="card hover:shadow-lg transition-all duration-300"
+                         >
+                           <div className="grid lg:grid-cols-12 gap-6">
+                             {/* Date/Time */}
+                             <div className="lg:col-span-3">
+                               <p className="text-xs tracking-wider uppercase text-neutral-500 mb-2 font-medium">
+                                 {getFormattedDate(scheduleItem.start_time)}
+                               </p>
+                               <p className="text-lg text-neutral-900 font-medium">
+                                 {getFormattedTime(scheduleItem.start_time, scheduleItem.end_time)}
+                               </p>
+                             </div>
+
+                             {/* Class Info */}
+                             <div className="lg:col-span-6">
+                               <h3 className="text-2xl font-heading text-neutral-900 mb-2">
+                                 {classData.title || 'Untitled Class'}
+                               </h3>
+                               <p className="text-base text-neutral-600 mb-3 leading-relaxed">
+                                 {classData.description || 'No description available'}
+                               </p>
+                               <div className="flex items-center gap-3 text-sm text-neutral-600">
+                                 <span className="font-medium">
+                                   Instructor: {classData.instructor_name || 'TBD'}
+                                 </span>
+                                 <span>•</span>
+                                 <span className="uppercase tracking-wider text-xs">
+                                   {classData.difficulty_level || 'All Levels'}
+                                 </span>
+                                 <span>•</span>
+                                 <span>{classData.duration || 60} min</span>
+                               </div>
+                             </div>
+
+                             {/* Enrollment */}
+                             <div className="lg:col-span-3 flex flex-col justify-between items-end">
+                               <div className="text-right mb-4">
+                                 {hasStarted ? (
+                                   <p className="text-sm text-neutral-500 font-medium">Class Started</p>
+                                 ) : spotsAvailable > 0 ? (
+                                   <p className="text-sm text-neutral-600">
+                                     {spotsAvailable} spots available
+                                   </p>
+                                 ) : (
+                                   <p className="text-sm text-red-600 font-medium">Class Full</p>
+                                 )}
+                               </div>
+                               <button
+                                 onClick={() => handleEnroll(scheduleItem.id)}
+                                 disabled={!canEnroll}
+                                 className={`px-6 py-2.5 text-sm tracking-wider uppercase transition-all duration-300 font-medium ${
+                                   !canEnroll
+                                     ? 'bg-neutral-200 text-neutral-500 cursor-not-allowed rounded-lg'
+                                     : 'btn-outline'
+                                 }`}
+                               >
+                                 {hasStarted ? 'Started' : spotsAvailable <= 0 ? 'Full' : 'Enroll'}
+                               </button>
+                             </div>
+                           </div>
+                         </motion.div>
+                       );
+                     })}
+                   </div>
+                 )}
         </div>
       </section>
     </div>

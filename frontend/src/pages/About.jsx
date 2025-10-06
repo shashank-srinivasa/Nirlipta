@@ -132,65 +132,81 @@ const About = () => {
               </p>
             </motion.div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {instructors.map((instructor, index) => (
-                <motion.div
-                  key={instructor.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  className="card text-center hover:shadow-lg transition-all"
-                >
-                  {/* Avatar */}
-                  <div className="mb-6 flex justify-center">
-                    {instructor.avatar_url ? (
-                      <img
-                        src={`http://localhost:8080${instructor.avatar_url}`}
-                        alt={instructor.name}
-                        className="w-32 h-32 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-32 h-32 rounded-full bg-neutral-900 flex items-center justify-center">
-                        <span className="text-4xl font-heading text-white">
-                          {getInitials(instructor.name)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
+                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                     {instructors.map((instructor, index) => {
+                       // Safety checks
+                       const name = instructor?.name || 'Instructor';
+                       const avatarUrl = instructor?.avatar_url;
+                       const yearsExp = instructor?.years_experience || 0;
+                       const bio = instructor?.instructor_bio;
+                       const specialties = Array.isArray(instructor?.instructor_specialties) 
+                         ? instructor.instructor_specialties 
+                         : [];
+                       
+                       return (
+                         <motion.div
+                           key={instructor?.id || index}
+                           initial={{ opacity: 0, y: 30 }}
+                           whileInView={{ opacity: 1, y: 0 }}
+                           transition={{ duration: 0.6, delay: index * 0.1 }}
+                           viewport={{ once: true }}
+                           className="card text-center hover:shadow-lg transition-all"
+                         >
+                           {/* Avatar */}
+                           <div className="mb-6 flex justify-center">
+                             {avatarUrl ? (
+                               <img
+                                 src={`http://localhost:8080${avatarUrl}`}
+                                 alt={name}
+                                 className="w-32 h-32 rounded-full object-cover"
+                                 onError={(e) => {
+                                   // Fallback if image fails to load
+                                   e.target.style.display = 'none';
+                                   e.target.nextSibling.style.display = 'flex';
+                                 }}
+                               />
+                             ) : (
+                               <div className="w-32 h-32 rounded-full bg-neutral-900 flex items-center justify-center">
+                                 <span className="text-4xl font-heading text-white">
+                                   {getInitials(name)}
+                                 </span>
+                               </div>
+                             )}
+                           </div>
 
-                  {/* Info */}
-                  <h3 className="text-2xl font-heading text-neutral-900 mb-2">
-                    {instructor.name}
-                  </h3>
-                  
-                  {instructor.years_experience > 0 && (
-                    <p className="text-sm text-neutral-500 mb-4">
-                      {instructor.years_experience} {instructor.years_experience === 1 ? 'year' : 'years'} of experience
-                    </p>
-                  )}
+                           {/* Info */}
+                           <h3 className="text-2xl font-heading text-neutral-900 mb-2">
+                             {name}
+                           </h3>
 
-                  {instructor.instructor_bio && (
-                    <p className="text-neutral-600 mb-4 leading-relaxed">
-                      {instructor.instructor_bio}
-                    </p>
-                  )}
+                           {yearsExp > 0 && (
+                             <p className="text-sm text-neutral-500 mb-4">
+                               {yearsExp} {yearsExp === 1 ? 'year' : 'years'} of experience
+                             </p>
+                           )}
 
-                  {instructor.instructor_specialties && instructor.instructor_specialties.length > 0 && (
-                    <div className="flex flex-wrap gap-2 justify-center">
-                      {instructor.instructor_specialties.map((specialty, idx) => (
-                        <span
-                          key={idx}
-                          className="px-3 py-1 bg-neutral-100 text-neutral-700 rounded-full text-xs font-medium"
-                        >
-                          {specialty}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </motion.div>
-              ))}
-            </div>
+                           {bio && (
+                             <p className="text-neutral-600 mb-4 leading-relaxed">
+                               {bio}
+                             </p>
+                           )}
+
+                           {specialties.length > 0 && (
+                             <div className="flex flex-wrap gap-2 justify-center">
+                               {specialties.map((specialty, idx) => (
+                                 <span
+                                   key={idx}
+                                   className="px-3 py-1 bg-neutral-100 text-neutral-700 rounded-full text-xs font-medium"
+                                 >
+                                   {specialty}
+                                 </span>
+                               ))}
+                             </div>
+                           )}
+                         </motion.div>
+                       );
+                     })}
+                   </div>
           </div>
         </section>
       )}

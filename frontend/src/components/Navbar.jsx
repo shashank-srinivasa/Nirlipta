@@ -55,9 +55,12 @@ const Navbar = () => {
             ))}
 
             {isAuthenticated ? (
-              <div className="relative">
+              <div 
+                className="relative"
+                onMouseEnter={() => setShowUserMenu(true)}
+                onMouseLeave={() => setShowUserMenu(false)}
+              >
                 <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
                   className="flex items-center space-x-2 text-neutral-700 hover:text-primary-600 transition-colors font-medium"
                 >
                   <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
@@ -73,6 +76,7 @@ const Navbar = () => {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
+                      transition={{ duration: 0.2 }}
                       className="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-lg border border-neutral-200 overflow-hidden"
                     >
                       <Link
