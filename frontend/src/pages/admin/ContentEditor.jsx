@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { FaSave, FaEye, FaEdit } from 'react-icons/fa';
 import { adminAPI } from '../../services/api';
+import { ToastContainer } from '../../components/Toast';
+import useToast from '../../hooks/useToast';
 
 const ContentEditor = () => {
+  const { toasts, removeToast, success, error: showError } = useToast();
   const [activeSection, setActiveSection] = useState('landing-hero');
   const [content, setContent] = useState({
     // Landing Page - Hero
@@ -41,9 +44,6 @@ const ContentEditor = () => {
   });
 
   const [saving, setSaving] = useState(false);
-  const [success, setSuccess] = useState('');
-  const [error, setError] = useState('');
-  const [editingField, setEditingField] = useState(null);
 
   useEffect(() => {
     fetchContent();
@@ -147,8 +147,6 @@ const ContentEditor = () => {
 
   const handleSave = async (sectionId) => {
     setSaving(true);
-    setError('');
-    setSuccess('');
 
     const section = sections.find(s => s.id === sectionId);
     
@@ -165,10 +163,9 @@ const ContentEditor = () => {
         });
       }
       
-      setSuccess('Saved successfully!');
-      setTimeout(() => setSuccess(''), 3000);
+      success('Changes saved successfully!');
     } catch (err) {
-      setError('Failed to save. Please try again.');
+      showError('Failed to save changes. Please try again.');
       console.error('Save error:', err);
     } finally {
       setSaving(false);
@@ -178,36 +175,19 @@ const ContentEditor = () => {
   const activeData = sections.find(s => s.id === activeSection);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-heading font-bold text-neutral-900">
-          Content Editor
-        </h1>
-        <p className="text-neutral-600 mt-1">
-          Edit all content across your website
-        </p>
-      </div>
-
-      {/* Success/Error Messages */}
-      <AnimatePresence>
-        {success && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="bg-green-50 text-green-700 p-4 rounded-lg font-medium border border-green-200"
-          >
-            {success}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {error && (
-        <div className="bg-red-50 text-red-600 p-4 rounded-lg border border-red-200">
-          {error}
+    <>
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
+      
+      <div className="space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-3xl font-heading font-bold text-neutral-900">
+            Content Editor
+          </h1>
+          <p className="text-neutral-600 mt-1">
+            Edit all content across your website
+          </p>
         </div>
-      )}
 
       {/* Section Tabs */}
       <div className="border-b border-neutral-200">
@@ -401,13 +381,14 @@ const ContentEditor = () => {
         </div>
       </div>
 
-      {/* Help Text */}
-      <div className="bg-neutral-50 p-4 rounded-lg border border-neutral-200">
-        <p className="text-sm text-neutral-700">
-          <strong>Tip:</strong> Changes are saved to the database and will appear on your live site immediately. Use the preview to see how your content will look.
-        </p>
+        {/* Help Text */}
+        <div className="bg-neutral-50 p-4 rounded-lg border border-neutral-200">
+          <p className="text-sm text-neutral-700">
+            <strong>Tip:</strong> Changes are saved to the database and will appear on your live site immediately. Use the preview to see how your content will look.
+          </p>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
