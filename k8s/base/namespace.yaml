@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nirlipta-yoga
+  labels:
+    name: nirlipta-yoga
+    app: yoga-studio
+

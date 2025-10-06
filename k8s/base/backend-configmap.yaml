@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: nirlipta-yoga
+data:
+  PORT: "8080"
+  ENV: "production"
+  # Update these after getting your domain/IP
+  FRONTEND_URL: "http://your-domain.com"
+  BACKEND_URL: "http://your-domain.com"
+

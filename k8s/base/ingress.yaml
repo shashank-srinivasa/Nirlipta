@@ -1,0 +1,43 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nirlipta-ingress
+  namespace: nirlipta-yoga
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    traefik.ingress.kubernetes.io/router.middlewares: nirlipta-yoga-redirect-https@kubernetescrd
+spec:
+  tls:
+  - hosts:
+    - nirlipta.yourdomain.com
+    secretName: nirlipta-tls
+  rules:
+  - host: nirlipta.yourdomain.com
+    http:
+      paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: backend
+            port:
+              number: 8080
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend
+            port:
+              number: 80
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: redirect-https
+  namespace: nirlipta-yoga
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true
+
