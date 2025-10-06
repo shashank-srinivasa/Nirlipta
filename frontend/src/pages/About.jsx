@@ -5,8 +5,16 @@ import { contentAPI, instructorAPI } from '../services/api';
 
 const About = () => {
   const [content, setContent] = useState({
-    'about-story': 'Founded in 2015, Nirlipta Yoga has been a sanctuary for those seeking balance, wellness, and inner peace. Our experienced instructors guide students of all levels through transformative yoga practices.',
-    'about-mission': 'Our mission is simple: to make yoga accessible to everyone, regardless of experience level or physical ability. We believe in the healing power of yoga and its ability to transform lives.',
+    'hero_title': 'Our Story',
+    'hero_subtitle': 'A sanctuary for mind, body, and spirit',
+    'hero_image': 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=2000&auto=format&fit=crop',
+    'story_title': 'Welcome to Nirlipta',
+    'story_content': 'Founded in 2015, Nirlipta Yoga has been a sanctuary for those seeking balance, wellness, and inner peace. Our experienced instructors guide students of all levels through transformative yoga practices.',
+    'story_content2': 'Our mission is simple: to make yoga accessible to everyone, regardless of experience level or physical ability. We believe in the healing power of yoga and its ability to transform lives.',
+    'story_content3': 'Through mindful movement, breath work, and meditation, we help our students find balance, reduce stress, and cultivate a deeper connection with themselves. Whether you\'re taking your first class or deepening an established practice, you\'ll find a welcoming home here.',
+    'cta_title': 'Ready to Join Us?',
+    'cta_subtitle': 'Experience the transformative power of yoga',
+    'cta_button': 'View Schedule',
   });
   const [instructors, setInstructors] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -58,7 +66,7 @@ const About = () => {
             initial={{ scale: 1.1 }}
             animate={{ scale: 1 }}
             transition={{ duration: 1.5, ease: "easeOut" }}
-            src="https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=2000&auto=format&fit=crop"
+            src={content.hero_image}
             alt="About Us"
             className="w-full h-full object-cover"
           />
@@ -74,10 +82,10 @@ const About = () => {
             transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
           >
             <h1 className="text-5xl sm:text-6xl md:text-7xl font-heading text-white mb-6 leading-tight">
-              Our Story
+              {content.hero_title}
             </h1>
             <p className="text-lg sm:text-xl text-white/95 max-w-2xl mx-auto leading-relaxed">
-              A sanctuary for mind, body, and spirit
+              {content.hero_subtitle}
             </p>
           </motion.div>
         </div>
@@ -94,19 +102,12 @@ const About = () => {
             className="text-center"
           >
             <h2 className="text-4xl md:text-5xl font-heading text-neutral-900 mb-8">
-              Welcome to Nirlipta
+              {content.story_title}
             </h2>
             <div className="space-y-6 text-lg text-neutral-600 leading-relaxed">
-              <p>{content['about-story']}</p>
-              <p>
-                {content['about-mission']}
-              </p>
-              <p>
-                Through mindful movement, breath work, and meditation, we help our students 
-                find balance, reduce stress, and cultivate a deeper connection with themselves. 
-                Whether you're taking your first class or deepening an established practice, 
-                you'll find a welcoming home here.
-              </p>
+              <p>{content.story_content}</p>
+              <p>{content.story_content2}</p>
+              <p>{content.story_content3}</p>
             </div>
           </motion.div>
         </div>
@@ -204,13 +205,13 @@ const About = () => {
             viewport={{ once: true }}
           >
             <h2 className="text-3xl md:text-4xl font-heading mb-6">
-              Ready to Join Us?
+              {content.cta_title}
             </h2>
             <p className="text-base md:text-lg mb-8 opacity-90 leading-relaxed">
-              Experience the transformative power of yoga
+              {content.cta_subtitle}
             </p>
             <Link to="/schedule" className="btn-outline-light text-base px-8 py-3">
-              View Schedule
+              {content.cta_button}
             </Link>
           </motion.div>
         </div>

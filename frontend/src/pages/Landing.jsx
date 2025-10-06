@@ -1,7 +1,31 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { contentAPI } from '../services/api';
 
 const Landing = () => {
+  const [content, setContent] = useState({
+    'hero_title': 'Nirlipta Yoga',
+    'hero_subtitle': 'Find your inner peace through the ancient practice of yoga',
+    'hero_image': 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=2000&auto=format&fit=crop',
+    'hero_button1': 'Explore Classes',
+    'hero_button2': 'Our Story',
+  });
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        const response = await contentAPI.getByPage('landing');
+        if (response.data) {
+          setContent(prev => ({ ...prev, ...response.data }));
+        }
+      } catch (err) {
+        console.error('Failed to fetch landing page content:', err);
+      }
+    };
+    fetchContent();
+  }, []);
+
   return (
     <div className="min-h-screen">
       {/* Hero Section - Full Screen with Background Image */}
@@ -12,7 +36,7 @@ const Landing = () => {
             initial={{ scale: 1.1 }}
             animate={{ scale: 1 }}
             transition={{ duration: 1.5, ease: "easeOut" }}
-            src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=2000&auto=format&fit=crop"
+            src={content.hero_image}
             alt="Yoga Background"
             className="w-full h-full object-cover"
           />
@@ -29,17 +53,17 @@ const Landing = () => {
             transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
           >
             <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-heading text-white mb-6 leading-tight">
-              Nirlipta Yoga
+              {content.hero_title}
             </h1>
             <p className="text-lg sm:text-xl md:text-2xl text-white/95 mb-10 max-w-2xl mx-auto leading-relaxed">
-              Find your inner peace through the ancient practice of yoga
+              {content.hero_subtitle}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/schedule" className="btn-primary text-base sm:text-lg px-8 sm:px-10 py-3 sm:py-4 shadow-2xl">
-                Explore Classes
+                {content.hero_button1}
               </Link>
               <Link to="/about" className="btn-outline-light text-base sm:text-lg px-8 sm:px-10 py-3 sm:py-4 shadow-xl">
-                Our Story
+                {content.hero_button2}
               </Link>
             </div>
           </motion.div>
