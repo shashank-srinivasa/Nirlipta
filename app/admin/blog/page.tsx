@@ -43,8 +43,11 @@ export default function AdminBlogPage() {
     if (!file) return
     setImageUploading(true)
     try {
+      const { compressImage } = await import('@/lib/compress-image')
+      // Blog covers: max 1920×1080 (16:9 landscape), 85% quality
+      const compressed = await compressImage(file, 1920, 1080, 0.85)
       const formData = new FormData()
-      formData.append('file', file)
+      formData.append('file', new File([compressed], file.name, { type: 'image/jpeg' }))
       const res = await adminFetch('/api/admin/blog/upload', { method: 'POST', body: formData })
       if (!res.ok) { const { error } = await res.json(); throw new Error(error || 'Upload failed') }
       const { publicUrl } = await res.json()

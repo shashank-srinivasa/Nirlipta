@@ -7,6 +7,7 @@ import { GalleryImage } from '@/types'
 import Image from 'next/image'
 import { Plus, Trash2, Loader2, Upload } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { compressImage } from '@/lib/compress-image'
 
 export default function AdminGalleryPage() {
   const [images, setImages] = useState<GalleryImage[]>([])
@@ -29,8 +30,10 @@ export default function AdminGalleryPage() {
     if (!file) return
     setUploading(true)
     try {
+      // Compress to max 1600px wide, 1600px tall, 85% quality — keeps file under ~300KB
+      const compressed = await compressImage(file, 1600, 1600, 0.85)
       const formData = new FormData()
-      formData.append('file', file)
+      formData.append('file', new File([compressed], file.name, { type: 'image/jpeg' }))
       if (caption) formData.append('caption', caption)
       formData.append('sort_order', String(images.length))
 

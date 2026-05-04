@@ -4,10 +4,11 @@ import { useEffect, useRef, useState } from 'react'
 import AdminSidebar from '../AdminSidebar'
 import { adminFetch } from '@/lib/admin-fetch'
 import { StudioSettings } from '@/types'
-import { Loader2, Eye, EyeOff } from 'lucide-react'
+import { Loader2, Eye, EyeOff, Upload } from 'lucide-react'
 import toast from 'react-hot-toast'
 import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from 'react-image-crop'
 import 'react-image-crop/dist/ReactCrop.css'
+import { compressImage } from '@/lib/compress-image'
 
 type Section = {
   title: string
@@ -27,7 +28,9 @@ function PhotoPicker({ value, onChange }: { value: string, onChange: (v: string)
   const [src, setSrc] = useState<string | null>(null)
   const [crop, setCrop] = useState<Crop>()
   const [completedCrop, setCompletedCrop] = useState<Crop>()
+  const [uploading, setUploading] = useState(false)
   const imgRef = useRef<HTMLImageElement>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -45,14 +48,16 @@ function PhotoPicker({ value, onChange }: { value: string, onChange: (v: string)
     setCompletedCrop(initial)
   }
 
-  const applyCrop = () => {
+  const applyCrop = async () => {
     const img = imgRef.current
     if (!img || !completedCrop) return
+    setUploading(true)
+
     const canvas = document.createElement('canvas')
     const scaleX = img.naturalWidth / img.width
     const scaleY = img.naturalHeight / img.height
-    const outW = 400
-    const outH = 500
+    const outW = 800
+    const outH = 1000
     canvas.width = outW
     canvas.height = outH
     const ctx = canvas.getContext('2d')!
@@ -64,19 +69,36 @@ function PhotoPicker({ value, onChange }: { value: string, onChange: (v: string)
       completedCrop.height * scaleY,
       0, 0, outW, outH,
     )
-    onChange(canvas.toDataURL('image/jpeg', 0.85))
-    setSrc(null)
+
+    try {
+      const blob = await new Promise<Blob>((res, rej) =>
+        canvas.toBlob(b => b ? res(b) : rej(new Error('toBlob failed')), 'image/jpeg', 0.85)
+      )
+      const formData = new FormData()
+      formData.append('file', new File([blob], 'teacher.jpg', { type: 'image/jpeg' }))
+      const resp = await (await import('@/lib/admin-fetch')).adminFetch('/api/admin/settings/upload', { method: 'POST', body: formData })
+      if (!resp.ok) throw new Error((await resp.json()).error || 'Upload failed')
+      const { publicUrl } = await resp.json()
+      onChange(publicUrl)
+      setSrc(null)
+      toast.success('Photo saved')
+    } catch (err: any) {
+      toast.error(err?.message || 'Upload failed')
+    } finally {
+      setUploading(false)
+    }
   }
 
   return (
     <>
       <div className="flex items-center gap-4">
         {value && (
-          <img src={value} alt="Teacher photo" className="w-16 h-16 rounded-full object-cover border border-gray-200" />
+          <img src={value} alt="Teacher photo" className="w-16 h-20 rounded-xl object-cover border border-gray-200" />
         )}
-        <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+        <label className={`cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-700 hover:bg-gray-50 transition-colors`}>
+          <Upload size={14} />
           {value ? 'Change photo' : 'Choose photo'}
-          <input type="file" accept="image/*" className="hidden" onChange={handleFile} />
+          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
         </label>
         {value && (
           <button type="button" onClick={() => onChange('')} className="text-xs text-red-400 hover:text-red-600">Remove</button>
@@ -87,19 +109,17 @@ function PhotoPicker({ value, onChange }: { value: string, onChange: (v: string)
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 space-y-4">
             <h3 className="font-semibold text-gray-900">Crop photo</h3>
+            <p className="text-xs text-gray-400">Drag to adjust. Best results with a portrait shot.</p>
             <div className="max-h-[60vh] overflow-auto flex justify-center">
-              <ReactCrop
-                crop={crop}
-                onChange={c => setCrop(c)}
-                onComplete={c => setCompletedCrop(c)}
-                aspect={4 / 5}
-              >
+              <ReactCrop crop={crop} onChange={c => setCrop(c)} onComplete={c => setCompletedCrop(c)} aspect={4 / 5}>
                 <img ref={imgRef} src={src} onLoad={onImageLoad} className="max-w-full" alt="crop" />
               </ReactCrop>
             </div>
             <div className="flex justify-end gap-3">
               <button type="button" onClick={() => setSrc(null)} className="px-4 py-2 rounded-xl border border-gray-200 text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
-              <button type="button" onClick={applyCrop} className="btn-primary text-sm px-4 py-2">Use this crop</button>
+              <button type="button" onClick={applyCrop} disabled={uploading} className="btn-primary text-sm px-4 py-2 flex items-center gap-2 disabled:opacity-60">
+                {uploading ? <><Loader2 size={14} className="animate-spin" /> Uploading…</> : 'Use this crop'}
+              </button>
             </div>
           </div>
         </div>

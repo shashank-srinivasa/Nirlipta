@@ -153,6 +153,7 @@ create policy "Service role all on testimonials" on testimonials for all using (
 insert into storage.buckets (id, name, public) values ('gallery', 'gallery', true) on conflict do nothing;
 insert into storage.buckets (id, name, public) values ('classes', 'classes', true) on conflict do nothing;
 insert into storage.buckets (id, name, public) values ('blog', 'blog', true) on conflict do nothing;
+insert into storage.buckets (id, name, public) values ('settings', 'settings', true) on conflict do nothing;
 
 -- Storage policies
 create policy "Public read gallery" on storage.objects for select using (bucket_id = 'gallery');
@@ -161,6 +162,8 @@ create policy "Public read classes" on storage.objects for select using (bucket_
 create policy "Service role manage classes" on storage.objects for all using (bucket_id = 'classes' and auth.role() = 'service_role');
 create policy "Public read blog" on storage.objects for select using (bucket_id = 'blog');
 create policy "Service role manage blog" on storage.objects for all using (bucket_id = 'blog' and auth.role() = 'service_role');
+create policy "Public read settings" on storage.objects for select using (bucket_id = 'settings');
+create policy "Service role manage settings" on storage.objects for all using (bucket_id = 'settings' and auth.role() = 'service_role');
 
 -- Indices for common query patterns
 create index if not exists idx_classes_active on classes (is_active);
