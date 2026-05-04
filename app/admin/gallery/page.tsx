@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react'
 import AdminSidebar from '../AdminSidebar'
-import { createClient } from '@/lib/supabase/client'
 import { GalleryImage } from '@/types'
 import Image from 'next/image'
 import { Plus, Trash2, Loader2, Upload } from 'lucide-react'
@@ -13,11 +12,13 @@ export default function AdminGalleryPage() {
   const [uploading, setUploading] = useState(false)
   const [caption, setCaption] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
-  const supabase = createClient()
 
   const load = async () => {
-    const { data } = await supabase.from('gallery').select('*').order('sort_order')
-    setImages(data || [])
+    const res = await fetch('/api/admin/gallery')
+    if (res.ok) {
+      const data = await res.json()
+      setImages(data || [])
+    }
   }
 
   useEffect(() => { load() }, [])
@@ -27,35 +28,36 @@ export default function AdminGalleryPage() {
     if (!file) return
     setUploading(true)
     try {
-      const ext = file.name.split('.').pop()
-      const path = `${Date.now()}.${ext}`
-      const { error: uploadError } = await supabase.storage.from('gallery').upload(path, file)
-      if (uploadError) throw uploadError
+      const formData = new FormData()
+      formData.append('file', file)
+      if (caption) formData.append('caption', caption)
+      formData.append('sort_order', String(images.length))
 
-      const { data: { publicUrl } } = supabase.storage.from('gallery').getPublicUrl(path)
-
-      const { error: insertError } = await supabase.from('gallery').insert({
-        image_url: publicUrl,
-        caption: caption || null,
-        sort_order: images.length,
-      })
-      if (insertError) throw insertError
+      const res = await fetch('/api/admin/gallery/upload', { method: 'POST', body: formData })
+      if (!res.ok) {
+        const { error } = await res.json()
+        throw new Error(error || 'Upload failed')
+      }
 
       toast.success('Image uploaded')
       setCaption('')
       if (fileRef.current) fileRef.current.value = ''
       load()
-    } catch (err) {
-      toast.error('Upload failed')
+    } catch (err: any) {
+      toast.error(err?.message || 'Upload failed')
     } finally {
       setUploading(false)
     }
   }
 
   const handleDelete = async (img: GalleryImage) => {
-    const path = img.image_url.split('/').pop()
-    if (path) await supabase.storage.from('gallery').remove([path])
-    await supabase.from('gallery').delete().eq('id', img.id)
+    const storagePath = img.image_url.split('/').pop()
+    const res = await fetch('/api/admin/gallery', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: img.id, storage_path: storagePath }),
+    })
+    if (!res.ok) { toast.error('Failed to delete'); return }
     toast.success('Deleted')
     load()
   }

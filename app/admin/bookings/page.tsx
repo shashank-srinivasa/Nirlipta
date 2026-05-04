@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import AdminSidebar from '../AdminSidebar'
-import { createClient } from '@/lib/supabase/client'
 import { formatPrice, formatDate } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 
@@ -11,13 +10,12 @@ export default function AdminBookingsPage() {
   const [filter, setFilter] = useState<'all' | 'confirmed' | 'pending' | 'cancelled'>('all')
 
   useEffect(() => {
-    const supabase = createClient()
     const load = async () => {
-      const { data } = await supabase
-        .from('bookings')
-        .select('*, classes(title, schedule_day, schedule_time)')
-        .order('created_at', { ascending: false })
-      setBookings(data || [])
+      const res = await fetch('/api/admin/bookings')
+      if (res.ok) {
+        const data = await res.json()
+        setBookings(data || [])
+      }
     }
     load()
   }, [])

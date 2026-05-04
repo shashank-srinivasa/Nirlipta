@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react'
 import AdminSidebar from '../AdminSidebar'
-import { createClient } from '@/lib/supabase/client'
 import { StudioSettings } from '@/types'
 import { Loader2, Eye, EyeOff } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -246,12 +245,14 @@ export default function AdminSettingsPage() {
   const [form, setForm] = useState<Partial<StudioSettings>>({})
   const [saving, setSaving] = useState(false)
   const [showSecret, setShowSecret] = useState(false)
-  const supabase = createClient()
 
   useEffect(() => {
     const load = async () => {
-      const { data } = await supabase.from('studio_settings').select('*').single()
-      if (data) setForm(data)
+      const res = await fetch('/api/admin/settings')
+      if (res.ok) {
+        const data = await res.json()
+        if (data) setForm(data)
+      }
     }
     load()
   }, [])
@@ -259,11 +260,12 @@ export default function AdminSettingsPage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
-    const { error } = await supabase
-      .from('studio_settings')
-      .update({ ...form, updated_at: new Date().toISOString() })
-      .eq('id', 1)
-    if (error) { toast.error('Failed to save'); setSaving(false); return }
+    const res = await fetch('/api/admin/settings', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+    })
+    if (!res.ok) { toast.error('Failed to save'); setSaving(false); return }
     toast.success('Settings saved!')
     setSaving(false)
   }

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import AdminSidebar from '../AdminSidebar'
-import { createClient } from '@/lib/supabase/client'
 import { Testimonial } from '@/types'
 import { Loader2, Plus, Trash2, Eye, EyeOff, GripVertical } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -26,12 +25,14 @@ export default function AdminTestimonialsPage() {
   const [saving, setSaving] = useState<string | null>(null)
   const [adding, setAdding] = useState(false)
   const [newForm, setNewForm] = useState({ ...EMPTY })
-  const supabase = createClient()
 
   const load = async () => {
     setLoading(true)
-    const { data } = await supabase.from('testimonials').select('*').order('sort_order')
-    setTestimonials(data || [])
+    const res = await fetch('/api/admin/testimonials')
+    if (res.ok) {
+      const data = await res.json()
+      setTestimonials(data || [])
+    }
     setLoading(false)
   }
 
@@ -39,8 +40,12 @@ export default function AdminTestimonialsPage() {
 
   const toggleActive = async (t: Testimonial) => {
     setSaving(t.id)
-    const { error } = await supabase.from('testimonials').update({ is_active: !t.is_active }).eq('id', t.id)
-    if (error) toast.error('Failed to update')
+    const res = await fetch('/api/admin/testimonials', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: t.id, is_active: !t.is_active }),
+    })
+    if (!res.ok) toast.error('Failed to update')
     else {
       setTestimonials(prev => prev.map(x => x.id === t.id ? { ...x, is_active: !t.is_active } : x))
       toast.success(t.is_active ? 'Hidden from site' : 'Now showing on site')
@@ -51,8 +56,12 @@ export default function AdminTestimonialsPage() {
   const deleteTestimonial = async (id: string) => {
     if (!confirm('Delete this testimonial?')) return
     setSaving(id)
-    const { error } = await supabase.from('testimonials').delete().eq('id', id)
-    if (error) toast.error('Failed to delete')
+    const res = await fetch('/api/admin/testimonials', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    })
+    if (!res.ok) toast.error('Failed to delete')
     else {
       setTestimonials(prev => prev.filter(x => x.id !== id))
       toast.success('Deleted')
@@ -66,13 +75,14 @@ export default function AdminTestimonialsPage() {
       return
     }
     setSaving('new')
-    const { data, error } = await supabase
-      .from('testimonials')
-      .insert({ ...newForm, sort_order: testimonials.length })
-      .select()
-      .single()
-    if (error) toast.error('Failed to add')
+    const res = await fetch('/api/admin/testimonials', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...newForm, sort_order: testimonials.length }),
+    })
+    if (!res.ok) toast.error('Failed to add')
     else {
+      const data = await res.json()
       setTestimonials(prev => [...prev, data])
       setNewForm({ ...EMPTY })
       setAdding(false)

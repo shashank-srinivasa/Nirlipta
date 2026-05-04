@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import AdminSidebar from '../AdminSidebar'
-import { createClient } from '@/lib/supabase/client'
 import { BlogPost } from '@/types'
 import { Plus, Pencil, Trash2, X, Loader2, Eye, EyeOff } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -18,11 +17,13 @@ export default function AdminBlogPage() {
   const [editing, setEditing] = useState<BlogPost | null>(null)
   const [form, setForm] = useState(EMPTY)
   const [saving, setSaving] = useState(false)
-  const supabase = createClient()
 
   const load = async () => {
-    const { data } = await supabase.from('blog_posts').select('*').order('created_at', { ascending: false })
-    setPosts(data || [])
+    const res = await fetch('/api/admin/blog')
+    if (res.ok) {
+      const data = await res.json()
+      setPosts(data || [])
+    }
   }
 
   useEffect(() => { load() }, [])
@@ -43,12 +44,23 @@ export default function AdminBlogPage() {
     }
 
     if (editing) {
-      const { error } = await supabase.from('blog_posts').update({ ...payload, updated_at: new Date().toISOString() }).eq('id', editing.id)
-      if (error) { toast.error('Failed to update'); setSaving(false); return }
+      const res = await fetch('/api/admin/blog', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: editing.id, ...payload }),
+      })
+      if (!res.ok) { toast.error('Failed to update'); setSaving(false); return }
       toast.success('Post updated')
     } else {
-      const { error } = await supabase.from('blog_posts').insert(payload)
-      if (error) { toast.error(error.message); setSaving(false); return }
+      const res = await fetch('/api/admin/blog', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) {
+        const { error } = await res.json()
+        toast.error(error || 'Failed to create'); setSaving(false); return
+      }
       toast.success('Post created')
     }
     setModal(false); setSaving(false); load()
@@ -56,16 +68,26 @@ export default function AdminBlogPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this post?')) return
-    await supabase.from('blog_posts').delete().eq('id', id)
+    const res = await fetch('/api/admin/blog', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    })
+    if (!res.ok) { toast.error('Failed to delete'); return }
     toast.success('Deleted'); load()
   }
 
   const togglePublish = async (p: BlogPost) => {
-    const { error } = await supabase.from('blog_posts').update({
-      is_published: !p.is_published,
-      published_at: !p.is_published ? new Date().toISOString() : null,
-    }).eq('id', p.id)
-    if (error) { toast.error('Failed'); return }
+    const res = await fetch('/api/admin/blog', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: p.id,
+        is_published: !p.is_published,
+        published_at: !p.is_published ? new Date().toISOString() : null,
+      }),
+    })
+    if (!res.ok) { toast.error('Failed'); return }
     toast.success(p.is_published ? 'Unpublished' : 'Published')
     load()
   }
