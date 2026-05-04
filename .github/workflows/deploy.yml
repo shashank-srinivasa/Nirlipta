@@ -55,11 +55,12 @@ jobs:
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
           GHCR_USER: ${{ secrets.GHCR_USER }}
           ADMIN_TOKEN_SECRET: ${{ secrets.ADMIN_TOKEN_SECRET }}
+          DUCKDNS_TOKEN: ${{ secrets.DUCKDNS_TOKEN }}
         with:
           host: ${{ secrets.VM_HOST }}
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY,NEXT_PUBLIC_APP_URL,NEXT_PUBLIC_WHATSAPP_NUMBER,SUPABASE_SERVICE_ROLE_KEY,ADMIN_EMAIL,ADMIN_PASSWORD,GHCR_TOKEN,GHCR_USER,ADMIN_TOKEN_SECRET
+          envs: NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY,NEXT_PUBLIC_APP_URL,NEXT_PUBLIC_WHATSAPP_NUMBER,SUPABASE_SERVICE_ROLE_KEY,ADMIN_EMAIL,ADMIN_PASSWORD,GHCR_TOKEN,GHCR_USER,ADMIN_TOKEN_SECRET,DUCKDNS_TOKEN
           script: |
             cd ~/Nirlipta
             git fetch origin main
@@ -71,3 +72,7 @@ jobs:
             docker compose pull
             docker compose up -d --remove-orphans
             docker image prune -f
+            mkdir -p ~/duckdns
+            printf '#!/bin/bash\ncurl -s "https://www.duckdns.org/update?domains=nirlipta&token=%s&ip=" -o ~/duckdns/duck.log\n' "$DUCKDNS_TOKEN" > ~/duckdns/duck.sh
+            chmod +x ~/duckdns/duck.sh
+            (crontab -l 2>/dev/null | grep -v duckdns; echo '*/5 * * * * /bin/bash ~/duckdns/duck.sh >/dev/null 2>&1') | crontab -
