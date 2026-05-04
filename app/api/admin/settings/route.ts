@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { createServiceClient } from '@/lib/supabase/server'
 import { isValidToken } from '@/lib/admin-tokens'
 
@@ -24,5 +25,11 @@ export async function PUT(req: NextRequest) {
     .update({ ...body, updated_at: new Date().toISOString() })
     .eq('id', 1)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  revalidatePath('/')
+  revalidatePath('/classes')
+  revalidatePath('/about')
+  revalidatePath('/contact')
+  revalidatePath('/gallery')
+  revalidatePath('/blog')
   return NextResponse.json({ ok: true })
 }

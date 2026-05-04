@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { createServiceClient } from '@/lib/supabase/server'
 import { isValidToken } from '@/lib/admin-tokens'
 
@@ -21,6 +22,8 @@ export async function POST(req: NextRequest) {
   const supabase = createServiceClient()
   const { error } = await supabase.from('blog_posts').insert(body)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  revalidatePath('/blog')
+  revalidatePath('/blog', 'layout')
   return NextResponse.json({ ok: true })
 }
 
@@ -30,6 +33,8 @@ export async function PUT(req: NextRequest) {
   const supabase = createServiceClient()
   const { error } = await supabase.from('blog_posts').update({ ...body, updated_at: new Date().toISOString() }).eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  revalidatePath('/blog')
+  revalidatePath('/blog', 'layout')
   return NextResponse.json({ ok: true })
 }
 
@@ -39,5 +44,7 @@ export async function DELETE(req: NextRequest) {
   const supabase = createServiceClient()
   const { error } = await supabase.from('blog_posts').delete().eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  revalidatePath('/blog')
+  revalidatePath('/blog', 'layout')
   return NextResponse.json({ ok: true })
 }
