@@ -13,7 +13,7 @@ ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 ENV NEXT_PUBLIC_WHATSAPP_NUMBER=$NEXT_PUBLIC_WHATSAPP_NUMBER
 
 COPY package.json package-lock.json ./
-RUN npm install -g npm@latest && npm ci
+RUN npm install
 
 COPY . .
 RUN npm run build
