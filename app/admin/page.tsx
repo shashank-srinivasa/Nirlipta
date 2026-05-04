@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import AdminSidebar from './AdminSidebar'
-import { createClient } from '@/lib/supabase/client'
+import { adminFetch } from '@/lib/admin-fetch'
 import { formatPrice } from '@/lib/utils'
 import { Users, BookOpen, DollarSign, Calendar } from 'lucide-react'
 import Link from 'next/link'
@@ -12,23 +12,21 @@ export default function AdminDashboard() {
   const [recentBookings, setRecentBookings] = useState<any[]>([])
 
   useEffect(() => {
-    const supabase = createClient()
     const load = async () => {
-      const [{ data: bookings }, { data: classes }] = await Promise.all([
-        supabase.from('bookings').select('amount_paid, student_email, status, created_at, classes(title)').eq('status', 'confirmed').order('created_at', { ascending: false }).limit(20),
-        supabase.from('classes').select('id').eq('is_active', true),
+      const [bookingsRes, classesRes] = await Promise.all([
+        adminFetch('/api/admin/bookings'),
+        adminFetch('/api/admin/classes'),
       ])
+      const bookings = bookingsRes.ok ? await bookingsRes.json() : []
+      const classes = classesRes.ok ? await classesRes.json() : []
 
-      const revenue = bookings?.reduce((sum, b) => sum + b.amount_paid, 0) || 0
-      const uniqueStudents = new Set(bookings?.map((b) => b.student_email)).size
+      const confirmed = bookings.filter((b: any) => b.status === 'confirmed')
+      const revenue = confirmed.reduce((sum: number, b: any) => sum + b.amount_paid, 0)
+      const uniqueStudents = new Set(confirmed.map((b: any) => b.student_email)).size
+      const activeClasses = classes.filter((c: any) => c.is_active).length
 
-      setStats({
-        bookings: bookings?.length || 0,
-        revenue,
-        classes: classes?.length || 0,
-        students: uniqueStudents,
-      })
-      setRecentBookings(bookings?.slice(0, 5) || [])
+      setStats({ bookings: confirmed.length, revenue, classes: activeClasses, students: uniqueStudents })
+      setRecentBookings(confirmed.slice(0, 5))
     }
     load()
   }, [])
@@ -66,13 +64,13 @@ export default function AdminDashboard() {
           </div>
           <div className="divide-y divide-gray-50">
             {recentBookings.length === 0 ? (
-              <p className="p-6 text-sm text-gray-400">No bookings yet.</p>
+              <p className="p-6 text-sm text-gray-400">No confirmed bookings yet.</p>
             ) : (
               recentBookings.map((b, i) => (
                 <div key={i} className="px-6 py-4 flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-900">{b.classes?.title}</p>
-                    <p className="text-xs text-gray-500">{b.student_email}</p>
+                    <p className="text-xs text-gray-500">{b.student_name} · {b.student_email}</p>
                   </div>
                   <span className="text-sm font-medium text-gray-900">{formatPrice(b.amount_paid)}</span>
                 </div>

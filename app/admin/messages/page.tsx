@@ -1,5 +1,5 @@
 import AdminSidebar from '../AdminSidebar'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/server'
 import { Mail, Phone, Clock } from 'lucide-react'
 
 function formatRelative(dateStr: string) {
@@ -14,7 +14,7 @@ function formatRelative(dateStr: string) {
 }
 
 export default async function AdminMessagesPage() {
-  const supabase = createClient()
+  const supabase = createServiceClient()
   const { data: messages } = await supabase
     .from('contact_messages')
     .select('*')
