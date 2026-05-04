@@ -48,11 +48,12 @@ jobs:
           host: ${{ secrets.VM_HOST }}
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY,NEXT_PUBLIC_APP_URL,NEXT_PUBLIC_WHATSAPP_NUMBER,SUPABASE_SERVICE_ROLE_KEY,ADMIN_EMAIL,ADMIN_PASSWORD
+          envs: NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY,NEXT_PUBLIC_APP_URL,NEXT_PUBLIC_WHATSAPP_NUMBER,SUPABASE_SERVICE_ROLE_KEY,ADMIN_EMAIL,ADMIN_PASSWORD,GHCR_TOKEN,GHCR_USER
           script: |
             cd ~/Nirlipta
             git fetch origin main
             git reset --hard origin/main
+            echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
             cat > .env <<EOF
             NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
             NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
