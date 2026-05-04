@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <!-- One kolam tile: 80x80, looping lines around a 3x3 dot grid -->
+    <pattern id="kolam-tile" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
+
+      <!-- Dots — the pulli (points) the kolam is drawn around -->
+      <circle cx="40" cy="40" r="2.2" fill="#C46508"/>
+      <circle cx="16" cy="16" r="1.6" fill="#C46508"/>
+      <circle cx="64" cy="16" r="1.6" fill="#C46508"/>
+      <circle cx="16" cy="64" r="1.6" fill="#C46508"/>
+      <circle cx="64" cy="64" r="1.6" fill="#C46508"/>
+      <circle cx="40" cy="16" r="1.4" fill="#C46508" opacity="0.6"/>
+      <circle cx="40" cy="64" r="1.4" fill="#C46508" opacity="0.6"/>
+      <circle cx="16" cy="40" r="1.4" fill="#C46508" opacity="0.6"/>
+      <circle cx="64" cy="40" r="1.4" fill="#C46508" opacity="0.6"/>
+
+      <!-- Central petal loop — 4-petalled flower around centre dot -->
+      <path d="
+        M40,28
+        C50,28 52,36 52,40
+        C52,44 50,52 40,52
+        C30,52 28,44 28,40
+        C28,36 30,28 40,28 Z
+      " fill="none" stroke="#C46508" stroke-width="1.4"/>
+
+      <!-- Diagonal loops connecting corner dots to centre -->
+      <!-- Top-left loop -->
+      <path d="
+        M16,16
+        C22,16 28,22 28,28
+        C22,28 16,22 16,16 Z
+      " fill="none" stroke="#C46508" stroke-width="1.2"/>
+      <!-- Top-right loop -->
+      <path d="
+        M64,16
+        C58,16 52,22 52,28
+        C58,28 64,22 64,16 Z
+      " fill="none" stroke="#C46508" stroke-width="1.2"/>
+      <!-- Bottom-left loop -->
+      <path d="
+        M16,64
+        C22,64 28,58 28,52
+        C22,52 16,58 16,64 Z
+      " fill="none" stroke="#C46508" stroke-width="1.2"/>
+      <!-- Bottom-right loop -->
+      <path d="
+        M64,64
+        C58,64 52,58 52,52
+        C58,52 64,58 64,64 Z
+      " fill="none" stroke="#C46508" stroke-width="1.2"/>
+
+      <!-- Outer arcs connecting mid-edge dots through corners — the signature
+           kolam "around the dot" curve -->
+      <!-- Top arc: left-mid → top-mid → right-mid, curving outward -->
+      <path d="M16,40 C16,24 28,16 40,16 C52,16 64,24 64,40"
+        fill="none" stroke="#C46508" stroke-width="1" opacity="0.5"/>
+      <!-- Bottom arc -->
+      <path d="M16,40 C16,56 28,64 40,64 C52,64 64,56 64,64"
+        fill="none" stroke="#C46508" stroke-width="1" opacity="0.5"/>
+
+      <!-- Inner diamond -->
+      <path d="M40,30 L50,40 L40,50 L30,40 Z"
+        fill="none" stroke="#C46508" stroke-width="0.9" opacity="0.7"/>
+
+    </pattern>
+
+    <!-- A second offset layer for depth — same tile shifted half-step -->
+    <pattern id="kolam-tile-offset" x="40" y="40" width="80" height="80" patternUnits="userSpaceOnUse">
+      <!-- Minimal accent dots at tile intersections -->
+      <circle cx="40" cy="40" r="1.2" fill="#CC3C1C" opacity="0.4"/>
+      <!-- Small 4-point star at every intersection -->
+      <path d="M40,34 L41.4,38.6 L46,40 L41.4,41.4 L40,46 L38.6,41.4 L34,40 L38.6,38.6 Z"
+        fill="#C46508" opacity="0.3"/>
+    </pattern>
+  </defs>
+
+  <!-- Base layer -->
+  <rect width="400" height="400" fill="url(#kolam-tile)"/>
+  <!-- Offset accent layer -->
+  <rect width="400" height="400" fill="url(#kolam-tile-offset)"/>
+</svg>

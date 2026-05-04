@@ -1,0 +1,97 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap');
+
+:root {
+  --font-display: 'Playfair Display', Georgia, serif;
+}
+
+* { box-sizing: border-box; padding: 0; margin: 0; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: #FFFFFF;
+  color: #1C1408;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Playfair Display', Georgia, serif;
+  letter-spacing: -0.02em;
+}
+
+::selection { background: rgba(245, 168, 32, 0.3); }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #E4D6C1; border-radius: 4px; }
+
+/* Warli pattern — light variant */
+.warli-bg {
+  background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23C46508' stroke-width='0.5' opacity='0.12'%3E%3Ccircle cx='40' cy='20' r='6'/%3E%3Cpolygon points='40,28 30,46 50,46'/%3E%3Cline x1='40' y1='46' x2='40' y2='58'/%3E%3Cline x1='40' y1='52' x2='30' y2='62'/%3E%3Cline x1='40' y1='52' x2='50' y2='62'/%3E%3Ccircle cx='10' cy='70' r='4'/%3E%3Ccircle cx='70' cy='70' r='4'/%3E%3Ccircle cx='10' cy='10' r='4'/%3E%3Ccircle cx='70' cy='10' r='4'/%3E%3Cline x1='0' y1='40' x2='80' y2='40' stroke-dasharray='3,5' opacity='0.5'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 80px 80px;
+}
+
+/* Section color bands */
+.section-parchment { background: transparent; color: #1C1408; }
+.section-cream     { background: rgba(244, 235, 212, 0.55); color: #1C1408; }
+.section-ink       { background: #0D0905; color: #FAF6EC; }
+.section-saffron   { background: #F5A820; color: #0D0905; }
+.section-forest    { background: #1B4D36; color: #FAF6EC; }
+.section-indigo    { background: #1E2756; color: #FAF6EC; }
+.section-kumkum    { background: #CC3C1C; color: #FAF6EC; }
+
+.btn-marigold {
+  @apply bg-marigold-500 text-parchment-50 px-6 py-3 rounded-full font-semibold text-sm tracking-wide transition-all duration-200 hover:bg-marigold-600 active:scale-95 focus:outline-none focus:ring-2 focus:ring-marigold-400 focus:ring-offset-2;
+}
+
+.btn-outline-ink {
+  @apply border border-ink/20 text-ink/70 px-6 py-3 rounded-full font-medium text-sm tracking-wide transition-all duration-200 hover:border-ink/40 hover:text-ink active:scale-95;
+}
+
+.glass-light {
+  background: rgba(250, 246, 236, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(196, 101, 8, 0.12);
+}
+
+.card-base {
+  background: #FFFFFF;
+  border: 1px solid #EBDAB8;
+  border-radius: 1rem;
+}
+
+.btn-primary {
+  @apply bg-sage-600 text-white px-5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 hover:bg-sage-700 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sage-400 focus:ring-offset-2 disabled:opacity-60;
+}
+
+.btn-secondary {
+  @apply border border-gray-200 text-gray-700 px-5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 hover:bg-gray-50 active:scale-95 focus:outline-none;
+}
+
+/* Blog prose */
+.prose-yoga {
+  color: #2E2015;
+  font-size: 1.05rem;
+  line-height: 1.8;
+}
+.prose-yoga p { margin-bottom: 1.5em; }
+.prose-yoga h2 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.6rem; font-weight: 600; margin-top: 2em; margin-bottom: 0.6em; color: #1C1408; }
+.prose-yoga h3 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.25rem; font-weight: 600; margin-top: 1.5em; margin-bottom: 0.5em; color: #1C1408; }
+.prose-yoga blockquote { border-left: 3px solid #C46508; padding-left: 1.25rem; margin: 1.5em 0; color: #6B5744; font-style: italic; }
+.prose-yoga strong { font-weight: 600; color: #1C1408; }
+.prose-yoga a { color: #C4580E; text-decoration: underline; text-underline-offset: 3px; }
+.prose-yoga a:hover { color: #A84410; }
+.prose-yoga ul { list-style: disc; padding-left: 1.5em; margin-bottom: 1.5em; }
+.prose-yoga ol { list-style: decimal; padding-left: 1.5em; margin-bottom: 1.5em; }
+.prose-yoga li { margin-bottom: 0.4em; }

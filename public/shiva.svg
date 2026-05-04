@@ -1,0 +1,173 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 700" fill="#5C3A1E">
+
+  <!-- ═══════════════════════════════════════
+       TRISHULA (trident) — to the right
+       Most iconically Shiva element
+  ═══════════════════════════════════════ -->
+  <!-- Staff -->
+  <rect x="294" y="90" width="6" height="380" rx="3"/>
+  <!-- Centre prong (tallest) -->
+  <path d="M297,90 C297,90 291,62 292,50 C293,38 302,38 303,50 C304,62 297,90 297,90 Z"/>
+  <!-- Left prong -->
+  <path d="M285,118 C285,118 276,96 278,86 C280,76 288,78 289,88 C290,98 285,118 285,118 Z"/>
+  <!-- Right prong -->
+  <path d="M309,118 C309,118 314,96 312,86 C310,76 302,78 301,88 C302,98 309,118 309,118 Z"/>
+  <!-- Prong base connector -->
+  <path d="M282,118 Q297,108 312,118" fill="none" stroke="#5C3A1E" stroke-width="5" stroke-linecap="round"/>
+  <!-- Damaru (drum) on staff -->
+  <path d="M289,220 Q297,212 305,220 L308,236 Q297,228 286,236 Z"/>
+  <path d="M286,236 Q297,244 308,236 L305,252 Q297,244 289,252 Z"/>
+  <!-- Damaru knot -->
+  <circle cx="297" cy="236" r="3"/>
+
+  <!-- ═══════════════════════════════════════
+       JATA — tall matted locks
+       Stacked, slightly asymmetric, reaching high
+  ═══════════════════════════════════════ -->
+  <!-- Outermost jata volume -->
+  <path d="
+    M 152,178
+    C 148,160 140,140 138,118
+    C 136,94  140,72  148,58
+    C 154,44  162,34  170,26
+    C 176,18  182,14  188,16
+    C 196,8   200,4   204,8
+    C 212,4   216,8   218,14
+    C 224,12  230,18  232,26
+    C 242,36  248,50  250,66
+    C 254,84  252,106 248,126
+    C 246,144 240,160 236,178
+    Z
+  "/>
+  <!-- Second layer — slightly inset, creates stacked texture -->
+  <path d="
+    M 158,178
+    C 154,162 148,144 148,124
+    C 148,102 154,80  162,62
+    C 168,48  176,38  184,32
+    C 190,26  196,24  200,26
+    C 206,24  212,28  218,36
+    C 226,48  230,64  230,84
+    C 230,104 226,126 222,148
+    C 220,162 216,172 212,178
+    Z
+  " fill="#FAF6EC" opacity="0.25"/>
+  <!-- Third layer (innermost) -->
+  <path d="
+    M 166,178
+    C 162,164 158,148 160,130
+    C 162,110 168,90  178,74
+    C 184,64  190,56  196,52
+    C 200,50  204,52  208,58
+    C 216,70  220,88  220,108
+    C 220,128 216,152 210,172
+    C 208,176 208,178 206,178
+    Z
+  " fill="#FAF6EC" opacity="0.15"/>
+
+  <!-- Crescent moon (Chandrakala) in jata — immediately recognisable -->
+  <path d="
+    M 228,72
+    C 244,58 258,56 264,64
+    C 256,60 244,66 240,80
+    C 238,88 240,96 246,100
+    C 234,96 224,82 228,72 Z
+  "/>
+
+  <!-- Ganga flowing from jata (wavy lines descending left side) -->
+  <path d="M148,130 Q138,150 144,168 Q136,178 142,188" fill="none" stroke="#5C3A1E" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M143,130 Q133,152 138,170" fill="none" stroke="#5C3A1E" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+
+  <!-- ═══════════════════════════════════════
+       HEAD — slightly downward inclined (meditation)
+  ═══════════════════════════════════════ -->
+  <ellipse cx="197" cy="222" rx="50" ry="52" transform="rotate(4 197 222)"/>
+
+  <!-- Third eye (Trinetra) -->
+  <ellipse cx="197" cy="208" rx="6" ry="4" transform="rotate(4 197 208)"/>
+
+  <!-- Rudraksha / tilak on forehead -->
+  <rect x="194" y="200" width="7" height="3" rx="1.5" fill="#FAF6EC" opacity="0.4"/>
+
+  <!-- ═══════════════════════════════════════
+       NECK — with rudraksha mala hint
+  ═══════════════════════════════════════ -->
+  <path d="M178,268 Q197,256 216,268 L218,282 Q197,272 176,282 Z"/>
+
+  <!-- ═══════════════════════════════════════
+       TORSO + ARMS — dhyana mudra,
+       right hand resting on left in lap
+  ═══════════════════════════════════════ -->
+  <!-- Main torso -->
+  <path d="
+    M 176,278
+    C 160,282 138,292 120,308
+    C 104,322 96,342 96,366
+    L 98,406
+    C 122,394 152,386 178,384
+    L 178,464
+    C 178,472 186,478 197,478
+    C 208,478 216,472 216,464
+    L 216,384
+    C 242,386 272,394 296,406
+    L 298,366
+    C 298,342 290,322 274,308
+    C 256,292 234,282 218,278 Z
+  "/>
+
+  <!-- Left upper arm detail -->
+  <path d="
+    M 96,380
+    C 82,390 72,408 74,428
+    C 76,444 88,456 104,458
+    L 112,454
+    C 100,446 92,432 92,416
+    C 92,400 100,386 110,378 Z
+  "/>
+
+  <!-- Right upper arm detail -->
+  <path d="
+    M 298,380
+    C 284,386 292,400 292,416
+    C 292,432 284,446 272,454
+    L 280,458
+    C 296,456 308,444 310,428
+    C 312,408 302,390 288,380 Z
+  "/>
+
+  <!-- Snake (Vasuki) coiled at neck/upper chest -->
+  <path d="M178,292 Q186,286 197,288 Q208,286 216,292 Q208,298 197,296 Q186,298 178,292 Z" fill="#FAF6EC" opacity="0.3"/>
+
+  <!-- ═══════════════════════════════════════
+       DHYANA MUDRA hands in lap
+  ═══════════════════════════════════════ -->
+  <ellipse cx="197" cy="474" rx="44" ry="13" transform="rotate(1 197 474)"/>
+
+  <!-- ═══════════════════════════════════════
+       PADMASANA — the wide lotus seat
+       This wide base is the most readable part of the silhouette
+  ═══════════════════════════════════════ -->
+  <path d="
+    M 178,456
+    C 156,452 122,440 92,426
+    C 64,414 36,410 24,428
+    C 14,444 22,466 52,478
+    C 84,490 134,492 170,490
+    L 197,488
+    L 224,490
+    C 260,492 310,490 342,478
+    C 372,466 380,444 370,428
+    C 358,410 330,414 302,426
+    C 272,440 238,452 216,456 Z
+  "/>
+
+  <!-- Lotus petal details on the base — subtle -->
+  <path d="M72,462 Q90,448 108,458 Q90,462 72,462 Z" fill="#FAF6EC" opacity="0.2"/>
+  <path d="M130,476 Q152,460 174,468 Q152,474 130,476 Z" fill="#FAF6EC" opacity="0.2"/>
+  <path d="M220,468 Q242,460 264,476 Q242,474 220,468 Z" fill="#FAF6EC" opacity="0.2"/>
+  <path d="M286,458 Q304,448 322,462 Q304,462 286,458 Z" fill="#FAF6EC" opacity="0.2"/>
+
+  <!-- Ground line — subtle base -->
+  <path d="M10,494 Q197,502 384,494" fill="none" stroke="#5C3A1E" stroke-width="2.5" stroke-linecap="round" opacity="0.4"/>
+
+</svg>
