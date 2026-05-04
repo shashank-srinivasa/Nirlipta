@@ -2,7 +2,12 @@ import { createClient } from '@/lib/supabase/server'
 import GalleryGrid from './GalleryGrid'
 import type { Metadata } from 'next'
 
-export const metadata: Metadata = { title: 'Gallery' }
+export async function generateMetadata(): Promise<Metadata> {
+  const supabase = createClient()
+  const { data } = await supabase.from('studio_settings').select('studio_name').single()
+  const name = data?.studio_name || 'Nirlipta'
+  return { title: 'Gallery', description: `Photos from ${name} — real classes, real students.` }
+}
 export const revalidate = 3600
 
 export default async function GalleryPage() {

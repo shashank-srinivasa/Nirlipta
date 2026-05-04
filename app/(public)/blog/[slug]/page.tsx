@@ -4,17 +4,36 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
 import { formatDate, sanitizeHtml } from '@/lib/utils'
+import { marked } from 'marked'
 import type { Metadata } from 'next'
 
 interface Props { params: { slug: string } }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const supabase = createClient()
-  const { data } = await supabase.from('blog_posts').select('title, excerpt').eq('slug', params.slug).single()
-  return { title: data?.title, description: data?.excerpt || undefined }
+  const { data } = await supabase.from('blog_posts').select('title, excerpt, cover_image_url').eq('slug', params.slug).single()
+  return {
+    title: data?.title,
+    description: data?.excerpt || undefined,
+    openGraph: {
+      title: data?.title,
+      description: data?.excerpt || undefined,
+      images: data?.cover_image_url ? [data.cover_image_url] : [],
+    },
+  }
 }
 
 export const revalidate = 3600
+
+function renderContent(content: string): string {
+  // Detect if content is markdown (has # headings or ** bold) or plain text
+  const looksLikeMarkdown = /^#{1,6}\s|^\*\*|\*\*$|\[.+\]\(|^[-*]\s/m.test(content)
+  if (looksLikeMarkdown) {
+    return sanitizeHtml(marked.parse(content) as string)
+  }
+  // Plain text — preserve line breaks
+  return sanitizeHtml(content.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br />'))
+}
 
 export default async function BlogPostPage({ params }: Props) {
   const supabase = createClient()
@@ -26,6 +45,8 @@ export default async function BlogPostPage({ params }: Props) {
     .single()
 
   if (!post) notFound()
+
+  const html = renderContent(post.content)
 
   return (
     <div className="pt-20 min-h-screen bg-parchment-50">
@@ -51,7 +72,7 @@ export default async function BlogPostPage({ params }: Props) {
 
         <div
           className="prose-yoga"
-          dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content.replace(/\n/g, '<br />')) }}
+          dangerouslySetInnerHTML={{ __html: html }}
         />
       </div>
     </div>

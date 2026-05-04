@@ -201,10 +201,13 @@ export default function AdminBlogPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Content *</label>
-                  <textarea rows={12} required value={form.content || ''} onChange={(e) => setForm((p) => ({ ...p, content: e.target.value }))}
-                    placeholder="Write your post content here..."
-                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-sage-400" />
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-sm font-medium text-gray-700">Content *</label>
+                    <span className="text-xs text-gray-400">Supports markdown: **bold**, # Heading, - list</span>
+                  </div>
+                  <textarea rows={14} required value={form.content || ''} onChange={(e) => setForm((p) => ({ ...p, content: e.target.value }))}
+                    placeholder={`Write your post here...\n\nYou can use markdown formatting:\n# Big heading\n## Smaller heading\n**bold text**\n- bullet point`}
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-sage-400 font-mono" />
                 </div>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={form.is_published || false} onChange={(e) => setForm((p) => ({ ...p, is_published: e.target.checked }))}

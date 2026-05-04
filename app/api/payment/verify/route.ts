@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { createServiceClient } from '@/lib/supabase/server'
+import { sendBookingNotification } from '@/lib/email'
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,11 +23,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Missing payment fields' }, { status: 400 })
     }
 
-    // Load key secret from DB (same source as create-order), fallback to env
     const supabase = createServiceClient()
     const { data: settings } = await supabase
       .from('studio_settings')
-      .select('razorpay_key_secret')
+      .select('razorpay_key_secret, email, teacher_name')
       .single()
     const keySecret = settings?.razorpay_key_secret || process.env.RAZORPAY_KEY_SECRET
 
@@ -34,7 +34,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Payment not configured' }, { status: 503 })
     }
 
-    // Verify signature
     const hmac = crypto.createHmac('sha256', keySecret)
     hmac.update(`${razorpay_order_id}|${razorpay_payment_id}`)
     const digest = hmac.digest('hex')
@@ -43,7 +42,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Invalid payment signature' }, { status: 400 })
     }
 
-    // Save booking
+    const { data: yoga } = await supabase.from('classes').select('title').eq('id', class_id).single()
+
     const { data: booking, error } = await supabase
       .from('bookings')
       .insert({
@@ -64,6 +64,22 @@ export async function POST(req: NextRequest) {
     if (error) {
       console.error('Booking insert error:', error)
       return NextResponse.json({ success: false, error: 'Failed to save booking' }, { status: 500 })
+    }
+
+    // Send email notification — non-blocking
+    const teacherEmail = settings?.email || process.env.ADMIN_EMAIL || ''
+    if (teacherEmail) {
+      sendBookingNotification({
+        studentName: student_name,
+        studentEmail: student_email,
+        studentPhone: student_phone,
+        classTitle: yoga?.title || 'Unknown class',
+        bookingDate: booking_date,
+        amountPaid: amount_paid,
+        paymentId: razorpay_payment_id,
+        teacherEmail,
+        teacherName: settings?.teacher_name || 'Ashwini',
+      })
     }
 
     return NextResponse.json({ success: true, bookingId: booking.id })

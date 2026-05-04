@@ -3,7 +3,12 @@ import ContactForm from './ContactForm'
 import { MapPin, Phone, Mail, MessageCircle } from 'lucide-react'
 import type { Metadata } from 'next'
 
-export const metadata: Metadata = { title: 'Contact' }
+export async function generateMetadata(): Promise<Metadata> {
+  const supabase = createClient()
+  const { data } = await supabase.from('studio_settings').select('teacher_name').single()
+  const teacher = data?.teacher_name?.split(' ')[0] || 'Ashwini'
+  return { title: 'Contact', description: `Get in touch with ${teacher}. Ask about classes, pricing, or anything else.` }
+}
 export const revalidate = 3600
 
 export default async function ContactPage() {

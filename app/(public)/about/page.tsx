@@ -4,7 +4,14 @@ import Testimonials from '@/components/sections/Testimonials'
 import WhatsAppSection from '@/components/sections/WhatsAppSection'
 import type { Metadata } from 'next'
 
-export const metadata: Metadata = { title: 'About' }
+export async function generateMetadata(): Promise<Metadata> {
+  const supabase = createClient()
+  const { data } = await supabase.from('studio_settings').select('teacher_name, about_text, studio_name').single()
+  const teacher = data?.teacher_name || 'Ashwini Karmbadka'
+  const studio = data?.studio_name || 'Nirlipta'
+  const desc = data?.about_text?.slice(0, 160) || `Meet ${teacher}, the teacher behind ${studio}.`
+  return { title: `About ${teacher}`, description: desc }
+}
 export const revalidate = 3600
 
 export default async function AboutPage() {

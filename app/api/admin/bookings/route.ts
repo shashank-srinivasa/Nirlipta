@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { createServiceClient } from '@/lib/supabase/server'
 import { isValidToken } from '@/lib/admin-tokens'
 
@@ -16,4 +17,36 @@ export async function GET(req: NextRequest) {
     .order('created_at', { ascending: false })
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json(data)
+}
+
+export async function POST(req: NextRequest) {
+  if (!auth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const body = await req.json()
+  const supabase = createServiceClient()
+  const { data, error } = await supabase
+    .from('bookings')
+    .insert({ ...body, status: body.status || 'confirmed' })
+    .select('id')
+    .single()
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  revalidatePath('/admin')
+  return NextResponse.json({ ok: true, id: data.id })
+}
+
+export async function PUT(req: NextRequest) {
+  if (!auth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { id, ...body } = await req.json()
+  const supabase = createServiceClient()
+  const { error } = await supabase.from('bookings').update(body).eq('id', id)
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json({ ok: true })
+}
+
+export async function DELETE(req: NextRequest) {
+  if (!auth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { id } = await req.json()
+  const supabase = createServiceClient()
+  const { error } = await supabase.from('bookings').delete().eq('id', id)
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json({ ok: true })
 }

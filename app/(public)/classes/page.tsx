@@ -2,7 +2,12 @@ import { createClient } from '@/lib/supabase/server'
 import ClassCard from '@/components/ui/ClassCard'
 import type { Metadata } from 'next'
 
-export const metadata: Metadata = { title: 'Classes' }
+export async function generateMetadata(): Promise<Metadata> {
+  const supabase = createClient()
+  const { data } = await supabase.from('studio_settings').select('classes_page_subtitle, studio_name').single()
+  const desc = data?.classes_page_subtitle || 'Hatha, Vinyasa, Yin and more. Find the right class for your body.'
+  return { title: 'Classes & Schedule', description: desc }
+}
 export const revalidate = 3600
 
 export default async function ClassesPage() {
