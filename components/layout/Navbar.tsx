@@ -14,7 +14,7 @@ const navLinks = [
   { href: '/contact', label: 'Contact' },
 ]
 
-export default function Navbar() {
+export default function Navbar({ studioName = 'Nirlipta' }: { studioName?: string }) {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const pathname = usePathname()
@@ -48,10 +48,10 @@ export default function Navbar() {
       <nav className="max-w-7xl mx-auto px-6 md:px-12 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-full bg-marigold-500 flex items-center justify-center shrink-0">
-            <span className="text-parchment-100 text-xs font-bold font-display">N</span>
+            <span className="text-parchment-100 text-xs font-bold font-display">{studioName[0]}</span>
           </div>
           <span className={cn('font-display font-semibold text-sm tracking-tight transition-colors', dark ? 'text-white/80' : 'text-ink')}>
-            Nirlipta
+            {studioName}
           </span>
         </Link>
 

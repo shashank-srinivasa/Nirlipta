@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import AdminSidebar from '../AdminSidebar'
 import { adminFetch } from '@/lib/admin-fetch'
 import { BlogPost } from '@/types'
-import { Plus, Pencil, Trash2, X, Loader2, Eye, EyeOff } from 'lucide-react'
+import { Plus, Pencil, Trash2, X, Loader2, Eye, EyeOff, Upload, ImageIcon } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { slugify, formatDate } from '@/lib/utils'
 
@@ -18,6 +18,8 @@ export default function AdminBlogPage() {
   const [editing, setEditing] = useState<BlogPost | null>(null)
   const [form, setForm] = useState(EMPTY)
   const [saving, setSaving] = useState(false)
+  const [imageUploading, setImageUploading] = useState(false)
+  const imageInputRef = useRef<HTMLInputElement>(null)
 
   const load = async () => {
     const res = await adminFetch('/api/admin/blog')
@@ -34,6 +36,26 @@ export default function AdminBlogPage() {
 
   const handleTitleChange = (title: string) => {
     setForm((prev) => ({ ...prev, title, slug: editing ? prev.slug : slugify(title) }))
+  }
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImageUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      const res = await adminFetch('/api/admin/blog/upload', { method: 'POST', body: formData })
+      if (!res.ok) { const { error } = await res.json(); throw new Error(error || 'Upload failed') }
+      const { publicUrl } = await res.json()
+      setForm(p => ({ ...p, cover_image_url: publicUrl }))
+      toast.success('Image uploaded')
+    } catch (err: any) {
+      toast.error(err?.message || 'Upload failed')
+    } finally {
+      setImageUploading(false)
+      if (imageInputRef.current) imageInputRef.current.value = ''
+    }
   }
 
   const handleSave = async (e: React.FormEvent) => {
@@ -152,9 +174,28 @@ export default function AdminBlogPage() {
                     className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-sage-400" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Cover Image URL</label>
-                  <input type="url" value={form.cover_image_url || ''} onChange={(e) => setForm((p) => ({ ...p, cover_image_url: e.target.value }))}
-                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sage-400" />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Cover Image</label>
+                  <div className="flex items-center gap-3">
+                    {form.cover_image_url ? (
+                      <div className="relative w-24 h-16 rounded-lg overflow-hidden border border-gray-200 shrink-0">
+                        <img src={form.cover_image_url} alt="Cover" className="w-full h-full object-cover" />
+                      </div>
+                    ) : (
+                      <div className="w-24 h-16 rounded-lg border border-dashed border-gray-200 flex items-center justify-center shrink-0">
+                        <ImageIcon size={20} className="text-gray-300" />
+                      </div>
+                    )}
+                    <div className="flex flex-col gap-1.5">
+                      <label className={`btn-secondary text-xs flex items-center gap-1.5 cursor-pointer ${imageUploading ? 'opacity-60 pointer-events-none' : ''}`}>
+                        {imageUploading ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />}
+                        {imageUploading ? 'Uploading…' : form.cover_image_url ? 'Replace' : 'Upload image'}
+                        <input ref={imageInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                      </label>
+                      {form.cover_image_url && (
+                        <button type="button" onClick={() => setForm(p => ({ ...p, cover_image_url: '' }))} className="text-xs text-red-400 hover:text-red-600 text-left">Remove</button>
+                      )}
+                    </div>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Content *</label>

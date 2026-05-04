@@ -2,9 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react'
 
-const CHARS = ['N', 'I', 'R', 'L', 'I', 'P', 'T', 'A']
-
-export default function Hero() {
+export default function Hero({ studioName = 'Nirlipta', tagline }: { studioName?: string; tagline?: string | null }) {
+  const CHARS = studioName.toUpperCase().split('')
   const [revealed, setRevealed] = useState(false)
   const glowRef = useRef<HTMLDivElement>(null)
 
@@ -50,7 +49,7 @@ export default function Hero() {
         <h1
           className="w-full font-display font-bold leading-none tracking-[-0.04em] select-none"
           style={{ fontSize: 'clamp(3.5rem, 18.5vw, 18vw)' }}
-          aria-label="Nirlipta"
+          aria-label={studioName}
         >
           {CHARS.map((ch, i) => (
             <span
@@ -69,23 +68,23 @@ export default function Hero() {
           ))}
         </h1>
 
-        {/* Three essence words */}
+        {/* Tagline */}
         <div
           className="flex items-center justify-center gap-5 mt-8 select-none"
-          style={{
-            opacity: revealed ? 1 : 0,
-            transition: 'opacity 1s ease',
-            transitionDelay: '600ms',
-          }}
+          style={{ opacity: revealed ? 1 : 0, transition: 'opacity 1s ease', transitionDelay: '600ms' }}
         >
-          {['Sthira', 'Sukha', 'Prana'].map((word, i) => (
-            <span key={word} className="flex items-center gap-5">
-              <span className="text-white/50 text-2xl md:text-3xl font-display font-bold tracking-tight">
-                {word}
-              </span>
-              {i < 2 && <span className="text-white/20">·</span>}
+          {tagline ? (
+            <span className="text-white/50 text-xl md:text-2xl font-display font-medium tracking-tight text-center">
+              {tagline}
             </span>
-          ))}
+          ) : (
+            ['Sthira', 'Sukha', 'Prana'].map((word, i) => (
+              <span key={word} className="flex items-center gap-5">
+                <span className="text-white/50 text-2xl md:text-3xl font-display font-bold tracking-tight">{word}</span>
+                {i < 2 && <span className="text-white/20">·</span>}
+              </span>
+            ))
+          )}
         </div>
       </div>
 
