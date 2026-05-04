@@ -1,6 +1,8 @@
 FROM node:22-alpine AS builder
 WORKDIR /app
 
+RUN apk add --no-cache python3 make g++ vips-dev
+
 # NEXT_PUBLIC_* vars must be present at build time — they get inlined into the JS bundle
 ARG NEXT_PUBLIC_SUPABASE_URL
 ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -13,7 +15,7 @@ ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 ENV NEXT_PUBLIC_WHATSAPP_NUMBER=$NEXT_PUBLIC_WHATSAPP_NUMBER
 
 COPY package.json package-lock.json ./
-RUN npm install
+RUN npm install --ignore-scripts && npm rebuild sharp --verbose
 
 COPY . .
 RUN npm run build
