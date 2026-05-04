@@ -1,7 +1,7 @@
 services:
   app:
     image: ghcr.io/shashank-srinivasa/nirlipta:latest
-    platform: linux/arm64
+    platform: linux/amd64
     restart: unless-stopped
     ports:
       - "3000:3000"
