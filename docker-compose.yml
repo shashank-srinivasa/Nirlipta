@@ -1,82 +1,15 @@
 services:
-
-  # ── Postgres ─────────────────────────────────────────────────────────────
-  db:
-    image: postgres:15-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: yogaapp
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    volumes:
-      - db_data:/var/lib/postgresql/data
-      - ./supabase/docker/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d yogaapp"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
-  # ── PostgREST (turns Postgres into a REST API) ───────────────────────────
-  postgrest:
-    image: postgrest/postgrest:v12.2.0
-    restart: unless-stopped
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      PGRST_DB_URI: postgres://postgres:postgres@db:5432/yogaapp
-      PGRST_DB_SCHEMA: public
-      PGRST_DB_ANON_ROLE: anon
-      PGRST_JWT_SECRET: super-secret-jwt-token-with-at-least-32-characters-long
-      PGRST_LOG_LEVEL: error
-
-  # ── nginx (serves PostgREST under /rest/v1/ so Supabase JS client works) ─
-  supabase-api:
-    image: nginx:alpine
-    restart: unless-stopped
-    depends_on:
-      - postgrest
-    volumes:
-      - ./supabase/docker/nginx.conf:/etc/nginx/nginx.conf:ro
-    ports:
-      - "8000:8000"
-    healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:8000/health"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
-  # ── Next.js app ──────────────────────────────────────────────────────────
   app:
-    build:
-      context: .
-      args:
-        NEXT_PUBLIC_SUPABASE_URL: http://localhost:8000
-        NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiJ9.ZopqoUt20nEV9cklpv9e3yw3PVyZLmKs5qLD6nGL1SI
-        NEXT_PUBLIC_APP_URL: http://localhost:3000
-        NEXT_PUBLIC_WHATSAPP_NUMBER: ${NEXT_PUBLIC_WHATSAPP_NUMBER:-919999999999}
+    image: ghcr.io/shashank-srinivasa/nirlipta:latest
     restart: unless-stopped
-    depends_on:
-      supabase-api:
-        condition: service_healthy
     ports:
       - "3000:3000"
     environment:
-      # Browser-side URL: must be reachable from the user's machine
-      NEXT_PUBLIC_SUPABASE_URL: http://localhost:8000
-      # Server-side URL: resolves inside Docker network
-      SUPABASE_INTERNAL_URL: http://supabase-api:8000
-      # Tokens signed with PGRST_JWT_SECRET above
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiJ9.ZopqoUt20nEV9cklpv9e3yw3PVyZLmKs5qLD6nGL1SI
-      SUPABASE_SERVICE_ROLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIn0.M2d2z4SFn5C7HlJlaSLfrzuYim9nbY_XI40uWFN3hEE
-      NEXT_PUBLIC_APP_URL: http://localhost:3000
-      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@yoga.local}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-changeme}
-      NEXT_PUBLIC_WHATSAPP_NUMBER: ${NEXT_PUBLIC_WHATSAPP_NUMBER:-919999999999}
-      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-}
-      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-}
       NODE_ENV: production
-
-volumes:
-  db_data:
+      NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
+      NEXT_PUBLIC_WHATSAPP_NUMBER: ${NEXT_PUBLIC_WHATSAPP_NUMBER}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
