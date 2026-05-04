@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import AdminSidebar from '../AdminSidebar'
+import { adminFetch } from '@/lib/admin-fetch'
 import { BlogPost } from '@/types'
 import { Plus, Pencil, Trash2, X, Loader2, Eye, EyeOff } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -19,7 +20,7 @@ export default function AdminBlogPage() {
   const [saving, setSaving] = useState(false)
 
   const load = async () => {
-    const res = await fetch('/api/admin/blog')
+    const res = await adminFetch('/api/admin/blog')
     if (res.ok) {
       const data = await res.json()
       setPosts(data || [])
@@ -44,7 +45,7 @@ export default function AdminBlogPage() {
     }
 
     if (editing) {
-      const res = await fetch('/api/admin/blog', {
+      const res = await adminFetch('/api/admin/blog', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: editing.id, ...payload }),
@@ -52,7 +53,7 @@ export default function AdminBlogPage() {
       if (!res.ok) { toast.error('Failed to update'); setSaving(false); return }
       toast.success('Post updated')
     } else {
-      const res = await fetch('/api/admin/blog', {
+      const res = await adminFetch('/api/admin/blog', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -68,7 +69,7 @@ export default function AdminBlogPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this post?')) return
-    const res = await fetch('/api/admin/blog', {
+    const res = await adminFetch('/api/admin/blog', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id }),
@@ -78,7 +79,7 @@ export default function AdminBlogPage() {
   }
 
   const togglePublish = async (p: BlogPost) => {
-    const res = await fetch('/api/admin/blog', {
+    const res = await adminFetch('/api/admin/blog', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

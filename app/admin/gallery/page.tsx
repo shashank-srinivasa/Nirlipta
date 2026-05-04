@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import AdminSidebar from '../AdminSidebar'
+import { adminFetch } from '@/lib/admin-fetch'
 import { GalleryImage } from '@/types'
 import Image from 'next/image'
 import { Plus, Trash2, Loader2, Upload } from 'lucide-react'
@@ -14,7 +15,7 @@ export default function AdminGalleryPage() {
   const fileRef = useRef<HTMLInputElement>(null)
 
   const load = async () => {
-    const res = await fetch('/api/admin/gallery')
+    const res = await adminFetch('/api/admin/gallery')
     if (res.ok) {
       const data = await res.json()
       setImages(data || [])
@@ -33,7 +34,7 @@ export default function AdminGalleryPage() {
       if (caption) formData.append('caption', caption)
       formData.append('sort_order', String(images.length))
 
-      const res = await fetch('/api/admin/gallery/upload', { method: 'POST', body: formData })
+      const res = await adminFetch('/api/admin/gallery/upload', { method: 'POST', body: formData })
       if (!res.ok) {
         const { error } = await res.json()
         throw new Error(error || 'Upload failed')
@@ -52,7 +53,7 @@ export default function AdminGalleryPage() {
 
   const handleDelete = async (img: GalleryImage) => {
     const storagePath = img.image_url.split('/').pop()
-    const res = await fetch('/api/admin/gallery', {
+    const res = await adminFetch('/api/admin/gallery', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: img.id, storage_path: storagePath }),

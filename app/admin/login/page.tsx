@@ -23,7 +23,7 @@ export default function AdminLoginPage() {
       })
       const data = await res.json()
       if (data.success) {
-        sessionStorage.setItem('admin_token', data.token)
+        localStorage.setItem('admin_token', data.token)
         router.push('/admin')
       } else {
         toast.error('Invalid email or password')

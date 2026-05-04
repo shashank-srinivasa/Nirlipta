@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import AdminSidebar from '../AdminSidebar'
+import { adminFetch } from '@/lib/admin-fetch'
 import { StudioSettings } from '@/types'
 import { Loader2, Eye, EyeOff } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -248,7 +249,7 @@ export default function AdminSettingsPage() {
 
   useEffect(() => {
     const load = async () => {
-      const res = await fetch('/api/admin/settings')
+      const res = await adminFetch('/api/admin/settings')
       if (res.ok) {
         const data = await res.json()
         if (data) setForm(data)
@@ -260,7 +261,7 @@ export default function AdminSettingsPage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
-    const res = await fetch('/api/admin/settings', {
+    const res = await adminFetch('/api/admin/settings', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form),

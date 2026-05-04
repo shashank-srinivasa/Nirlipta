@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import AdminSidebar from '../AdminSidebar'
-import { createClient } from '@/lib/supabase/client'
+import { adminFetch } from '@/lib/admin-fetch'
 import { Class } from '@/types'
 import { formatPrice } from '@/lib/utils'
 import { Plus, Pencil, Trash2, X, Loader2 } from 'lucide-react'
@@ -29,11 +29,9 @@ export default function AdminClassesPage() {
   const [form, setForm] = useState<ClassForm>(EMPTY_CLASS)
   const [saving, setSaving] = useState(false)
 
-  const supabase = createClient()
-
   const load = async () => {
-    const { data } = await supabase.from('classes').select('*').order('created_at', { ascending: false })
-    setClasses(data || [])
+    const res = await adminFetch('/api/admin/classes')
+    if (res.ok) setClasses(await res.json())
   }
 
   useEffect(() => { load() }, [])
@@ -56,8 +54,8 @@ export default function AdminClassesPage() {
     setSaving(true)
     const payload = { ...form, price: Number(form.price), duration_minutes: Number(form.duration_minutes), max_students: Number(form.max_students) }
     const res = editing
-      ? await fetch('/api/admin/classes', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: editing.id, ...payload }) })
-      : await fetch('/api/admin/classes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+      ? await adminFetch('/api/admin/classes', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: editing.id, ...payload }) })
+      : await adminFetch('/api/admin/classes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
     if (!res.ok) { toast.error(editing ? 'Failed to update' : 'Failed to create'); setSaving(false); return }
     toast.success(editing ? 'Class updated' : 'Class created')
     setModal(false); setSaving(false); load()
@@ -65,7 +63,7 @@ export default function AdminClassesPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this class? This will also delete all bookings.')) return
-    const res = await fetch('/api/admin/classes', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
+    const res = await adminFetch('/api/admin/classes', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
     if (!res.ok) { toast.error('Failed to delete'); return }
     toast.success('Deleted'); load()
   }

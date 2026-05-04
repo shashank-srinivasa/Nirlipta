@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import AdminSidebar from '../AdminSidebar'
+import { adminFetch } from '@/lib/admin-fetch'
 import { formatPrice, formatDate } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 
@@ -11,7 +12,7 @@ export default function AdminBookingsPage() {
 
   useEffect(() => {
     const load = async () => {
-      const res = await fetch('/api/admin/bookings')
+      const res = await adminFetch('/api/admin/bookings')
       if (res.ok) {
         const data = await res.json()
         setBookings(data || [])

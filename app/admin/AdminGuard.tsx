@@ -10,7 +10,7 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
 
   useEffect(() => {
     const verify = async () => {
-      const token = sessionStorage.getItem('admin_token')
+      const token = localStorage.getItem('admin_token')
       if (!token) {
         if (pathname !== '/admin/login') router.replace('/admin/login')
         else setAuthed(true)
@@ -27,7 +27,7 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
         if (valid) {
           setAuthed(true)
         } else {
-          sessionStorage.removeItem('admin_token')
+          localStorage.removeItem('admin_token')
           router.replace('/admin/login')
         }
       } catch {

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import AdminSidebar from '../AdminSidebar'
+import { adminFetch } from '@/lib/admin-fetch'
 import { Testimonial } from '@/types'
 import { Loader2, Plus, Trash2, Eye, EyeOff, GripVertical } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -28,7 +29,7 @@ export default function AdminTestimonialsPage() {
 
   const load = async () => {
     setLoading(true)
-    const res = await fetch('/api/admin/testimonials')
+    const res = await adminFetch('/api/admin/testimonials')
     if (res.ok) {
       const data = await res.json()
       setTestimonials(data || [])
@@ -40,7 +41,7 @@ export default function AdminTestimonialsPage() {
 
   const toggleActive = async (t: Testimonial) => {
     setSaving(t.id)
-    const res = await fetch('/api/admin/testimonials', {
+    const res = await adminFetch('/api/admin/testimonials', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: t.id, is_active: !t.is_active }),
@@ -56,7 +57,7 @@ export default function AdminTestimonialsPage() {
   const deleteTestimonial = async (id: string) => {
     if (!confirm('Delete this testimonial?')) return
     setSaving(id)
-    const res = await fetch('/api/admin/testimonials', {
+    const res = await adminFetch('/api/admin/testimonials', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id }),
@@ -75,7 +76,7 @@ export default function AdminTestimonialsPage() {
       return
     }
     setSaving('new')
-    const res = await fetch('/api/admin/testimonials', {
+    const res = await adminFetch('/api/admin/testimonials', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...newForm, sort_order: testimonials.length }),

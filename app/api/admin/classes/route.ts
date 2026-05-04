@@ -3,8 +3,16 @@ import { createServiceClient } from '@/lib/supabase/server'
 import { isValidToken } from '@/lib/admin-tokens'
 
 function auth(req: NextRequest) {
-  const token = req.cookies.get('admin_token')?.value
+  const token = req.headers.get('x-admin-token') || req.cookies.get('admin_token')?.value
   return token && isValidToken(token)
+}
+
+export async function GET(req: NextRequest) {
+  if (!auth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const supabase = createServiceClient()
+  const { data, error } = await supabase.from('classes').select('*').order('created_at', { ascending: false })
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json(data)
 }
 
 export async function POST(req: NextRequest) {
