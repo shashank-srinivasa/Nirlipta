@@ -11,11 +11,13 @@ ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 ENV NEXT_PUBLIC_WHATSAPP_NUMBER=$NEXT_PUBLIC_WHATSAPP_NUMBER
 
-COPY package.json package-lock.json ./
-RUN npm ci
+RUN corepack enable && corepack prepare yarn@1.22.22 --activate
+
+COPY package.json yarn.lock ./
+RUN yarn install --frozen-lockfile --non-interactive
 
 COPY . .
-RUN npm run build
+RUN yarn build
 
 FROM node:22-alpine AS runner
 WORKDIR /app
