@@ -72,23 +72,32 @@ export default function AdminGalleryPage() {
       <div className="flex-1 p-8">
         <div className="mb-8">
           <h1 className="text-2xl font-semibold text-gray-900">Gallery</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage studio photos</p>
+          <p className="text-sm text-gray-500 mt-1">
+            {images.length} / 50 photos
+            {images.length >= 40 && images.length < 50 && (
+              <span className="ml-2 text-amber-500">Almost full — consider removing older photos</span>
+            )}
+          </p>
         </div>
 
         <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm mb-8">
           <h2 className="font-medium text-gray-900 mb-4">Upload New Photo</h2>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <input
-              type="text" placeholder="Caption (optional)" value={caption}
-              onChange={(e) => setCaption(e.target.value)}
-              className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sage-400"
-            />
-            <label className={`btn-primary flex items-center gap-2 cursor-pointer ${uploading ? 'opacity-60 pointer-events-none' : ''}`}>
-              {uploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
-              {uploading ? 'Uploading...' : 'Choose Photo'}
-              <input ref={fileRef} type="file" accept="image/*" onChange={handleUpload} className="hidden" />
-            </label>
-          </div>
+          {images.length >= 50 ? (
+            <p className="text-sm text-red-500">Gallery is full (50/50). Delete some photos before uploading new ones.</p>
+          ) : (
+            <div className="flex flex-col sm:flex-row gap-3">
+              <input
+                type="text" placeholder="Caption (optional)" value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sage-400"
+              />
+              <label className={`btn-primary flex items-center gap-2 cursor-pointer ${uploading ? 'opacity-60 pointer-events-none' : ''}`}>
+                {uploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+                {uploading ? 'Uploading...' : 'Choose Photo'}
+                <input ref={fileRef} type="file" accept="image/*" onChange={handleUpload} className="hidden" />
+              </label>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">

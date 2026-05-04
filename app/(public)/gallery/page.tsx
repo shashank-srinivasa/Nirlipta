@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import Image from 'next/image'
+import GalleryGrid from './GalleryGrid'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = { title: 'Gallery' }
@@ -24,26 +24,7 @@ export default async function GalleryPage() {
 
       <div className="section-parchment max-w-7xl mx-auto px-6 md:px-12 py-16">
         {images && images.length > 0 ? (
-          <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
-            {images.map((img) => (
-              <div key={img.id} className="break-inside-avoid group relative overflow-hidden rounded-2xl border border-parchment-300">
-                <div className="relative aspect-auto">
-                  <Image
-                    src={img.image_url}
-                    alt={img.caption || 'Yoga studio'}
-                    width={800}
-                    height={600}
-                    className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  {img.caption && (
-                    <div className="absolute inset-0 bg-gradient-to-t from-ink/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                      <p className="text-parchment-100 text-sm font-medium">{img.caption}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+          <GalleryGrid images={images} />
         ) : (
           <div className="py-32 text-center text-ink/30">
             <p className="text-lg">No photos yet.</p>
