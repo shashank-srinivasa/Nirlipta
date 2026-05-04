@@ -55,22 +55,18 @@ export default function AdminClassesPage() {
     e.preventDefault()
     setSaving(true)
     const payload = { ...form, price: Number(form.price), duration_minutes: Number(form.duration_minutes), max_students: Number(form.max_students) }
-    if (editing) {
-      const { error } = await supabase.from('classes').update({ ...payload, updated_at: new Date().toISOString() }).eq('id', editing.id)
-      if (error) { toast.error('Failed to update'); setSaving(false); return }
-      toast.success('Class updated')
-    } else {
-      const { error } = await supabase.from('classes').insert(payload)
-      if (error) { toast.error('Failed to create'); setSaving(false); return }
-      toast.success('Class created')
-    }
+    const res = editing
+      ? await fetch('/api/admin/classes', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: editing.id, ...payload }) })
+      : await fetch('/api/admin/classes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+    if (!res.ok) { toast.error(editing ? 'Failed to update' : 'Failed to create'); setSaving(false); return }
+    toast.success(editing ? 'Class updated' : 'Class created')
     setModal(false); setSaving(false); load()
   }
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this class? This will also delete all bookings.')) return
-    const { error } = await supabase.from('classes').delete().eq('id', id)
-    if (error) { toast.error('Failed to delete'); return }
+    const res = await fetch('/api/admin/classes', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
+    if (!res.ok) { toast.error('Failed to delete'); return }
     toast.success('Deleted'); load()
   }
 
