@@ -52,6 +52,7 @@ interface Props {
   studioName?: string
   whatsapp?: string
   paymentMode?: PaymentMode
+  initialDate?: string
 }
 
 export default function BookingForm({
@@ -60,12 +61,13 @@ export default function BookingForm({
   studioName = 'Nirlipta',
   whatsapp = '919999999999',
   paymentMode = 'whatsapp',
+  initialDate = '',
 }: Props) {
   const router = useRouter()
   const teacherFirst = teacherName.split(' ')[0]
   const whatsappClean = whatsapp.replace(/\D/g, '')
   const [loading, setLoading] = useState(false)
-  const [form, setForm] = useState({ booking_date: '', student_name: '', student_email: '', student_phone: '' })
+  const [form, setForm] = useState({ booking_date: initialDate, student_name: '', student_email: '', student_phone: '' })
   const [errors, setErrors] = useState<Partial<typeof form>>({})
 
   const minDate = getValidDates(yoga.schedule_day)
@@ -78,11 +80,13 @@ export default function BookingForm({
     if (!form.booking_date) e.booking_date = 'Pick a date'
     else if (!isValidDate(form.booking_date, yoga.schedule_day))
       e.booking_date = `This class runs on ${yoga.schedule_day?.split(',').map(d => d.trim()).join(', ')} only`
-    if (!form.student_name.trim()) e.student_name = 'Enter your name'
-    if (!form.student_email.trim() || !/\S+@\S+\.\S+/.test(form.student_email))
-      e.student_email = 'Enter a valid email'
-    if (!form.student_phone.trim() || form.student_phone.trim().length < 7)
-      e.student_phone = 'Enter a valid phone number'
+    if (!form.student_name.trim() || form.student_name.trim().length < 2)
+      e.student_name = 'Enter your full name'
+    if (!form.student_email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.student_email))
+      e.student_email = 'Enter a valid email address'
+    const digits = form.student_phone.replace(/\D/g, '')
+    if (!digits || digits.length < 10)
+      e.student_phone = 'Enter a valid 10-digit phone number'
     setErrors(e)
     return Object.keys(e).length === 0
   }

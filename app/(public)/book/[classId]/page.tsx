@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { formatPrice, formatTime } from '@/lib/utils'
 import type { Metadata } from 'next'
 
-interface Props { params: { classId: string } }
+interface Props { params: { classId: string }; searchParams: { date?: string } }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const supabase = createClient()
@@ -18,7 +18,7 @@ const categoryGlyph: Record<string, string> = {
   Hatha: '☽', Vinyasa: '◈', Yin: '✦', Meditation: '◎', Power: '⟁', Restorative: '❋',
 }
 
-export default async function BookingPage({ params }: Props) {
+export default async function BookingPage({ params, searchParams }: Props) {
   const supabase = createClient()
   const [{ data: yoga }, { data: settings }] = await Promise.all([
     supabase.from('classes').select('*').eq('id', params.classId).eq('is_active', true).single(),
@@ -84,6 +84,7 @@ export default async function BookingPage({ params }: Props) {
               studioName={studioName}
               whatsapp={whatsapp}
               paymentMode={paymentMode}
+              initialDate={searchParams.date || ''}
             />
           </div>
         </div>
