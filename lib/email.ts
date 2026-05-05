@@ -31,11 +31,15 @@ async function send(payload: object) {
   const apiKey = process.env.RESEND_API_KEY
   if (!apiKey) return
   try {
-    await fetch('https://api.resend.com/emails', {
+    const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     })
+    if (!res.ok) {
+      const body = await res.text()
+      console.error('[EMAIL] Resend error', res.status, body)
+    }
   } catch (err) {
     console.error('[EMAIL] Send failed:', err)
   }

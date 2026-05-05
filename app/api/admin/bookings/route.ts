@@ -53,7 +53,7 @@ export async function PUT(req: NextRequest) {
       .select('email, teacher_name, studio_name')
       .single()
     if (booking?.student_email) {
-      sendBookingConfirmed({
+      await sendBookingConfirmed({
         studentName: booking.student_name,
         studentEmail: booking.student_email,
         studentPhone: booking.student_phone,

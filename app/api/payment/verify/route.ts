@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
 
     const teacherEmail = settings?.email || process.env.ADMIN_EMAIL || ''
     if (teacherEmail) {
-      sendBookingReceived({
+      await sendBookingReceived({
         studentName: student_name,
         studentEmail: student_email,
         studentPhone: student_phone,
