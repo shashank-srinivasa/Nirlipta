@@ -11,12 +11,11 @@ export default function WhatsAppSection({ whatsapp, teacherName = 'Ashwini' }: {
       <div className="relative max-w-5xl mx-auto px-6 md:px-12">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
           <div>
-            <p className="text-ink/40 text-xs font-medium tracking-[0.2em] uppercase mb-3">Before you book</p>
             <h2 className="text-3xl font-display font-semibold text-ink tracking-tight leading-tight">
-              Not sure where to start?
+              Have a question?
             </h2>
-            <p className="text-ink/60 mt-2 text-lg max-w-sm">
-              Message {first} directly. She responds to every inquiry herself.
+            <p className="text-ink/60 mt-2 text-lg">
+              Message {first} on WhatsApp.
             </p>
           </div>
           <a
