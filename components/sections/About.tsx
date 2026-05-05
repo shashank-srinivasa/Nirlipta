@@ -11,12 +11,6 @@ interface AboutProps {
   specialisations?: string | null
 }
 
-const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1593811167562-9cef47bfc4d7?w=800&q=80'
-const DEFAULT_ABOUT = `Ashwini has been teaching yoga for over a decade — in Bengaluru studios, in Puttur backyards, and occasionally on rooftops when the weather allowed.
-
-Her approach is rooted in classical Hatha but she moves fluidly into Vinyasa when the room calls for it. Alignment matters. So does breath. So does showing up on the days you don't feel like it.
-
-She won't flatter bad posture, but she will meet you exactly where you are.`
 
 export default function About({
   aboutText,
@@ -30,19 +24,19 @@ export default function About({
   specialisations,
 }: AboutProps) {
   const name = teacherName || 'Ashwini Karmbadka'
-  const photo = teacherPhotoUrl || DEFAULT_PHOTO
   const heading = aboutHeading || 'Trained in tradition.'
   const headingSub = aboutHeadingSub || 'Grounded in real life.'
-  const years = yearsExperience || '15+'
-  const students = studentsTaught || '400+'
-  const cert = certification || '200hr'
-  const specs = specialisations || 'Hatha & Vinyasa'
+  const years = yearsExperience || null
+  const students = studentsTaught || null
+  const cert = certification || null
+  const specs = specialisations || null
 
   const stats = [
-    { value: students, label: 'Students taught' },
-    { value: specs, label: 'Specialisations' },
-    { value: cert, label: 'RYT Certified' },
-  ]
+    years   && { value: years,    label: 'Years of practice & teaching' },
+    students && { value: students, label: 'Students taught' },
+    specs   && { value: specs,    label: 'Specialisations' },
+    cert    && { value: cert,     label: 'RYT Certified' },
+  ].filter(Boolean) as { value: string; label: string }[]
 
   return (
     <section className="py-28 section-parchment relative overflow-hidden">
@@ -55,18 +49,17 @@ export default function About({
             <div className="absolute -top-4 -left-4 w-full h-full rounded-3xl border border-marigold-400/25 pointer-events-none" />
             <div className="absolute -bottom-4 -right-4 w-32 h-32 rounded-full border-2 border-kumkum-400/15 pointer-events-none" />
 
-            <div className="aspect-[4/5] relative rounded-3xl overflow-hidden">
-              <img
-                src={photo}
-                alt={name}
-                className="object-cover w-full h-full"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-ink/20 to-transparent" />
-            </div>
-
-            <div className="absolute -bottom-5 -right-5 glass-light rounded-2xl px-5 py-4 shadow-lg border border-parchment-300">
-              <p className="text-2xl font-display font-semibold text-ink">{years}</p>
-              <p className="text-xs text-ink/40 mt-0.5">years of practice & teaching</p>
+            <div className="aspect-[4/5] relative rounded-3xl overflow-hidden bg-parchment-200">
+              {teacherPhotoUrl ? (
+                <>
+                  <img src={teacherPhotoUrl} alt={name} className="object-cover w-full h-full" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-ink/20 to-transparent" />
+                </>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <p className="text-ink/20 text-sm text-center px-8">Photo not uploaded yet.<br />Add it in Admin → Settings.</p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -77,20 +70,26 @@ export default function About({
               <span className="italic font-normal text-ink/60">{headingSub}</span>
             </h2>
 
-            <div className="space-y-5">
-              {(aboutText || DEFAULT_ABOUT).split('\n\n').map((para, i) => (
-                <p key={i} className="text-ink/60 leading-[1.8] text-[1.05rem]">{para}</p>
-              ))}
-            </div>
+            {aboutText ? (
+              <div className="space-y-5">
+                {aboutText.split('\n\n').map((para, i) => (
+                  <p key={i} className="text-ink/60 leading-[1.8] text-[1.05rem]">{para}</p>
+                ))}
+              </div>
+            ) : (
+              <p className="text-ink/30 italic">Bio not written yet. Add it in Admin → Settings → About Text.</p>
+            )}
 
-            <div className="mt-10 grid grid-cols-3 gap-6 border-t border-parchment-300 pt-10">
-              {stats.map(s => (
-                <div key={s.label}>
-                  <p className="text-xl font-display font-semibold text-terracotta-400 leading-snug">{s.value}</p>
-                  <p className="text-xs text-ink/35 mt-1.5 uppercase tracking-wide">{s.label}</p>
-                </div>
-              ))}
-            </div>
+            {stats.length > 0 && (
+              <div className={`mt-10 grid gap-6 border-t border-parchment-300 pt-10`} style={{ gridTemplateColumns: `repeat(${Math.min(stats.length, 3)}, 1fr)` }}>
+                {stats.map(s => (
+                  <div key={s.label}>
+                    <p className="text-xl font-display font-semibold text-terracotta-400 leading-snug">{s.value}</p>
+                    <p className="text-xs text-ink/35 mt-1.5 uppercase tracking-wide">{s.label}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
         </div>
