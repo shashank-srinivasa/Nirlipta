@@ -3,6 +3,8 @@ import { createServiceClient } from '@/lib/supabase/server'
 import { formatDate, formatPrice } from '@/lib/utils'
 import { CheckCircle } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+
 interface Props { searchParams: { booking?: string } }
 
 export default async function PaymentSuccessPage({ searchParams }: Props) {

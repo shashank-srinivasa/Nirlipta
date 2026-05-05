@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { MessageCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 
+export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Request Sent' }
 
 export default async function BookingSentPage() {
