@@ -17,6 +17,8 @@ export async function POST(req: NextRequest) {
   const sortOrder = parseInt(formData.get('sort_order') as string || '0', 10)
 
   if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 })
+  if (!file.type.startsWith('image/')) return NextResponse.json({ error: 'Only image files are allowed' }, { status: 400 })
+  if (file.size > 10 * 1024 * 1024) return NextResponse.json({ error: 'File too large (max 10 MB)' }, { status: 400 })
 
   const ext = file.name.split('.').pop()
   const path = `${Date.now()}.${ext}`

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/server'
 import { formatDate, formatPrice } from '@/lib/utils'
 import { CheckCircle } from 'lucide-react'
 
@@ -8,7 +8,7 @@ interface Props { searchParams: { booking?: string } }
 export default async function PaymentSuccessPage({ searchParams }: Props) {
   let booking = null
   if (searchParams.booking) {
-    const supabase = createClient()
+    const supabase = createServiceClient()
     const { data } = await supabase
       .from('bookings')
       .select('*, classes(title)')
@@ -56,9 +56,7 @@ export default async function PaymentSuccessPage({ searchParams }: Props) {
           </div>
         )}
 
-        <p className="text-sm text-ink/40 mb-6">
-          A confirmation has been sent to your email. See you soon!
-        </p>
+        <p className="text-sm text-ink/40 mb-6">See you soon!</p>
 
         <Link href="/classes" className="btn-marigold inline-block">
           Explore More Classes

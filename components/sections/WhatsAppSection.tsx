@@ -2,8 +2,9 @@
 
 import { MessageCircle } from 'lucide-react'
 
-export default function WhatsAppSection({ whatsapp }: { whatsapp: string }) {
-  const msg = `https://wa.me/${whatsapp.replace(/\D/g, '')}?text=Hi%20Ashwini%2C%20I%27d%20like%20to%20know%20more%20about%20your%20classes`
+export default function WhatsAppSection({ whatsapp, teacherName = 'Ashwini' }: { whatsapp: string; teacherName?: string }) {
+  const first = teacherName.split(' ')[0]
+  const msg = `https://wa.me/${whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi ${first}, I'd like to know more about your classes`)}`
 
   return (
     <section className="py-24 section-cream relative overflow-hidden warli-bg">
@@ -15,7 +16,7 @@ export default function WhatsAppSection({ whatsapp }: { whatsapp: string }) {
               Not sure where to start?
             </h2>
             <p className="text-ink/60 mt-2 text-lg max-w-sm">
-              Message Ashwini directly. She responds to every inquiry herself.
+              Message {first} directly. She responds to every inquiry herself.
             </p>
           </div>
           <a
@@ -25,7 +26,7 @@ export default function WhatsAppSection({ whatsapp }: { whatsapp: string }) {
             className="shrink-0 inline-flex items-center gap-2.5 bg-ink text-parchment-100 px-7 py-4 rounded-full font-medium text-sm hover:bg-ink-light transition-all active:scale-95 shadow-lg"
           >
             <MessageCircle size={17} />
-            WhatsApp Ashwini
+            WhatsApp {first}
           </a>
         </div>
       </div>

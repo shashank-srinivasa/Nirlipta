@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { createServiceClient } from '@/lib/supabase/server'
 import { isValidToken } from '@/lib/admin-tokens'
+import { sendBookingNotification } from '@/lib/email'
 
 function auth(req: NextRequest) {
   const token = req.headers.get('x-admin-token') || req.cookies.get('admin_token')?.value
@@ -35,10 +36,37 @@ export async function POST(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   if (!auth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const { id, ...body } = await req.json()
+  const { id, send_confirmation, ...body } = await req.json()
   const supabase = createServiceClient()
   const { error } = await supabase.from('bookings').update(body).eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // Send confirmation email when admin confirms a booking
+  if (send_confirmation && body.status === 'confirmed') {
+    const { data: booking } = await supabase
+      .from('bookings')
+      .select('*, classes(title)')
+      .eq('id', id)
+      .single()
+    const { data: settings } = await supabase
+      .from('studio_settings')
+      .select('email, teacher_name, studio_name')
+      .single()
+    if (booking?.student_email) {
+      sendBookingNotification({
+        studentName: booking.student_name,
+        studentEmail: booking.student_email,
+        studentPhone: booking.student_phone,
+        classTitle: booking.classes?.title || 'Yoga class',
+        bookingDate: booking.booking_date,
+        amountPaid: booking.amount_paid,
+        teacherEmail: settings?.email || process.env.ADMIN_EMAIL || '',
+        teacherName: settings?.teacher_name || 'Ashwini',
+        studioName: settings?.studio_name || 'Nirlipta',
+      })
+    }
+  }
+
   return NextResponse.json({ ok: true })
 }
 

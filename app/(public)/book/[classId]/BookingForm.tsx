@@ -79,8 +79,18 @@ export default function BookingForm({
     return Object.keys(e).length === 0
   }
 
-  const handleWhatsApp = () => {
+  const handleWhatsApp = async () => {
     if (!validate()) return
+    setLoading(true)
+    // Save as pending booking so admin can track it
+    try {
+      await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...form, class_id: yoga.id, amount_paid: yoga.price, status: 'pending' }),
+      })
+    } catch { /* non-blocking — proceed regardless */ }
+    setLoading(false)
     const lines = [
       `Hi ${teacherFirst}, I'd like to book a class.`,
       `Class: ${yoga.title}`,

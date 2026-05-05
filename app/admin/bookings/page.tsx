@@ -5,7 +5,7 @@ import AdminSidebar from '../AdminSidebar'
 import { adminFetch } from '@/lib/admin-fetch'
 import { formatPrice, formatDate } from '@/lib/utils'
 import { cn } from '@/lib/utils'
-import { Plus, X, Loader2 } from 'lucide-react'
+import { Plus, X, Loader2, Trash2, CheckCircle } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 const EMPTY_BOOKING = {
@@ -47,7 +47,7 @@ export default function AdminBookingsPage() {
     const res = await adminFetch('/api/admin/bookings', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form, amount_paid: Number(form.amount_paid) }),
+      body: JSON.stringify({ ...form, amount_paid: Math.round(Number(form.amount_paid) * 100) }),
     })
     if (!res.ok) { const e = await res.json().catch(() => ({})); toast.error(e.error || 'Failed to add booking'); setSaving(false); return }
     toast.success('Booking added')
@@ -57,14 +57,23 @@ export default function AdminBookingsPage() {
     load()
   }
 
-  const updateStatus = async (id: string, status: string) => {
+  const deleteBooking = async (id: string) => {
+    if (!confirm('Delete this booking permanently?')) return
+    const res = await adminFetch('/api/admin/bookings', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
+    if (!res.ok) { const e = await res.json().catch(() => ({})); toast.error(e.error || 'Failed to delete booking'); return }
+    setBookings(prev => prev.filter(b => b.id !== id))
+    toast.success('Booking deleted')
+  }
+
+  const updateStatus = async (id: string, status: string, sendEmail = false) => {
     const res = await adminFetch('/api/admin/bookings', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, status }),
+      body: JSON.stringify({ id, status, send_confirmation: sendEmail }),
     })
     if (!res.ok) { const e = await res.json().catch(() => ({})); toast.error(e.error || 'Failed to update status'); return }
     setBookings(prev => prev.map(b => b.id === id ? { ...b, status } : b))
+    if (sendEmail) toast.success('Confirmed and confirmation email sent')
   }
 
   const statusColors: Record<string, string> = {
@@ -105,7 +114,7 @@ export default function AdminBookingsPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  {['Student', 'Class', 'Date', 'Contact', 'Amount', 'Status', 'Booked'].map((h) => (
+                  {['Student', 'Class', 'Date', 'Contact', 'Amount', 'Status', 'Booked', ''].map((h) => (
                     <th key={h} className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
@@ -124,17 +133,33 @@ export default function AdminBookingsPage() {
                     <td className="px-6 py-4 text-gray-600">{b.student_phone}</td>
                     <td className="px-6 py-4 font-medium text-gray-900">{formatPrice(b.amount_paid)}</td>
                     <td className="px-6 py-4">
-                      <select
-                        value={b.status}
-                        onChange={e => updateStatus(b.id, e.target.value)}
-                        className={`text-xs font-medium px-2.5 py-1 rounded-full border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-sage-400 ${statusColors[b.status] || 'bg-gray-100 text-gray-600'}`}
-                      >
-                        <option value="confirmed">confirmed</option>
-                        <option value="pending">pending</option>
-                        <option value="cancelled">cancelled</option>
-                      </select>
+                      <div className="flex items-center gap-1.5">
+                        <select
+                          value={b.status}
+                          onChange={e => updateStatus(b.id, e.target.value)}
+                          className={`text-xs font-medium px-2.5 py-1 rounded-full border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-sage-400 ${statusColors[b.status] || 'bg-gray-100 text-gray-600'}`}
+                        >
+                          <option value="confirmed">confirmed</option>
+                          <option value="pending">pending</option>
+                          <option value="cancelled">cancelled</option>
+                        </select>
+                        {b.status === 'pending' && (
+                          <button
+                            onClick={() => updateStatus(b.id, 'confirmed', true)}
+                            title="Confirm and send email to student"
+                            className="p-1 text-gray-300 hover:text-green-600 transition-colors"
+                          >
+                            <CheckCircle size={15} />
+                          </button>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 text-gray-400 text-xs whitespace-nowrap">{formatDate(b.created_at)}</td>
+                    <td className="px-6 py-4">
+                      <button onClick={() => deleteBooking(b.id)} title="Delete booking" className="p-1.5 text-gray-300 hover:text-red-500 transition-colors">
+                        <Trash2 size={14} />
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -152,10 +177,12 @@ export default function AdminBookingsPage() {
               <form onSubmit={handleAdd} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Class *</label>
-                  <select required value={form.class_id} onChange={e => setForm(p => ({ ...p, class_id: e.target.value }))}
-                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sage-400">
+                  <select required value={form.class_id} onChange={e => {
+                    const cls = classes.find((c: any) => c.id === e.target.value)
+                    setForm(p => ({ ...p, class_id: e.target.value, amount_paid: cls ? cls.price / 100 : p.amount_paid }))
+                  }} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sage-400">
                     <option value="">Select a class</option>
-                    {classes.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+                    {classes.map((c: any) => <option key={c.id} value={c.id}>{c.title} — {c.schedule_day || 'flexible'}</option>)}
                   </select>
                 </div>
                 <div className="grid grid-cols-2 gap-4">

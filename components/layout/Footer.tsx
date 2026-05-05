@@ -1,12 +1,12 @@
 import Link from 'next/link'
-import { Instagram, Youtube, MessageCircle } from 'lucide-react'
+import { Instagram, Youtube, MessageCircle, Facebook } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 
 export default async function Footer() {
   const supabase = createClient()
   const { data: settings } = await supabase
     .from('studio_settings')
-    .select('studio_name, teacher_name, footer_tagline, instagram_url, youtube_url, whatsapp_number')
+    .select('studio_name, teacher_name, footer_tagline, instagram_url, youtube_url, facebook_url, whatsapp_number')
     .single()
   const whatsapp = settings?.whatsapp_number || process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '919999999999'
   const studioName = settings?.studio_name || 'Nirlipta'
@@ -64,6 +64,12 @@ export default async function Footer() {
                 <a href={settings.youtube_url} target="_blank" rel="noopener noreferrer"
                   className="p-2 rounded-full bg-white/5 hover:bg-red-600 text-white/60 hover:text-white transition-colors" aria-label="YouTube">
                   <Youtube size={15} />
+                </a>
+              )}
+              {settings?.facebook_url && (
+                <a href={settings.facebook_url} target="_blank" rel="noopener noreferrer"
+                  className="p-2 rounded-full bg-white/5 hover:bg-blue-600 text-white/60 hover:text-white transition-colors" aria-label="Facebook">
+                  <Facebook size={15} />
                 </a>
               )}
             </div>

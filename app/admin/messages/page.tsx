@@ -1,5 +1,8 @@
 export const dynamic = 'force-dynamic'
 
+import { headers, cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
+import { isValidToken } from '@/lib/admin-tokens'
 import AdminSidebar from '../AdminSidebar'
 import { createServiceClient } from '@/lib/supabase/server'
 import { Mail, Phone, Clock } from 'lucide-react'
@@ -16,6 +19,8 @@ function formatRelative(dateStr: string) {
 }
 
 export default async function AdminMessagesPage() {
+  const token = cookies().get('admin_token')?.value || headers().get('x-admin-token') || ''
+  if (!isValidToken(token)) redirect('/admin/login')
   const supabase = createServiceClient()
   const { data: messages } = await supabase
     .from('contact_messages')

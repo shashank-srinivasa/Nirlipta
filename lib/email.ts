@@ -11,6 +11,7 @@ interface BookingEmailData {
   paymentId?: string
   teacherEmail: string
   teacherName: string
+  studioName?: string
 }
 
 interface ContactEmailData {
@@ -62,6 +63,37 @@ export async function sendBookingNotification(data: BookingEmailData) {
     })
   } catch (err) {
     console.error('[EMAIL] Failed to send booking notification:', err)
+  }
+
+  // Student confirmation
+  if (!data.studentEmail) return
+  const studioName = data.studioName || 'the studio'
+  const studentBody = {
+    from: 'bookings@nirlipta.duckdns.org',
+    to: data.studentEmail,
+    subject: `Booking confirmed — ${data.classTitle}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
+        <h2 style="color:#1a1a1a;margin-bottom:4px">You&apos;re booked!</h2>
+        <p style="color:#666;margin-top:0">Hi ${data.studentName}, your spot is confirmed. See you on the mat.</p>
+        <table style="width:100%;border-collapse:collapse;margin:24px 0">
+          <tr><td style="padding:10px 0;border-bottom:1px solid #eee;color:#666;width:40%">Class</td><td style="padding:10px 0;border-bottom:1px solid #eee;font-weight:600">${data.classTitle}</td></tr>
+          <tr><td style="padding:10px 0;border-bottom:1px solid #eee;color:#666">Date</td><td style="padding:10px 0;border-bottom:1px solid #eee;font-weight:600">${data.bookingDate}</td></tr>
+          <tr><td style="padding:10px 0;color:#666">Amount paid</td><td style="padding:10px 0;font-weight:700;color:#16a34a">${formatAmount(data.amountPaid)}</td></tr>
+        </table>
+        ${data.paymentId ? `<p style="font-size:12px;color:#999">Payment ID: ${data.paymentId}</p>` : ''}
+        <p style="font-size:13px;color:#888">— ${studioName}</p>
+      </div>
+    `,
+  }
+  try {
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(studentBody),
+    })
+  } catch (err) {
+    console.error('[EMAIL] Failed to send student confirmation:', err)
   }
 }
 

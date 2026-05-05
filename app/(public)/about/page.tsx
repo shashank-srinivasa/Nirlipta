@@ -49,7 +49,7 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      <WhatsAppSection whatsapp={whatsapp} />
+      <WhatsAppSection whatsapp={whatsapp} teacherName={settings?.teacher_name} />
     </div>
   )
 }

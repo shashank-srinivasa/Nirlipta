@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, Calendar, BookOpen, Image, FileText, Settings, LogOut, ExternalLink, Quote, Mail } from 'lucide-react'
+import { LayoutDashboard, Calendar, BookOpen, Image, FileText, Settings, LogOut, ExternalLink, Quote, Mail, UserCog } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
@@ -14,6 +14,7 @@ const navItems = [
   { href: '/admin/testimonials', label: 'Testimonials', icon: Quote },
   { href: '/admin/messages', label: 'Messages', icon: Mail },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
+  { href: '/admin/users', label: 'Admin Users', icon: UserCog },
 ]
 
 export default function AdminSidebar() {
@@ -21,7 +22,7 @@ export default function AdminSidebar() {
   const router = useRouter()
 
   const logout = () => {
-    sessionStorage.removeItem('admin_token')
+    localStorage.removeItem('admin_token')
     router.push('/admin/login')
   }
 

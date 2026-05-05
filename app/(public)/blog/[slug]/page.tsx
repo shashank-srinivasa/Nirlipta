@@ -11,7 +11,7 @@ interface Props { params: { slug: string } }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const supabase = createClient()
-  const { data } = await supabase.from('blog_posts').select('title, excerpt, cover_image_url').eq('slug', params.slug).single()
+  const { data } = await supabase.from('blog_posts').select('title, excerpt, cover_image_url').eq('slug', params.slug).eq('is_published', true).single()
   return {
     title: data?.title,
     description: data?.excerpt || undefined,

@@ -4,7 +4,15 @@ import Image from 'next/image'
 import { formatDate } from '@/lib/utils'
 import type { Metadata } from 'next'
 
-export const metadata: Metadata = { title: 'Blog' }
+
+export async function generateMetadata(): Promise<Metadata> {
+  const supabase = createClient()
+  const { data } = await supabase.from('studio_settings').select('blog_page_subtitle, teacher_name, studio_name').single()
+  const teacher = data?.teacher_name?.split(' ')[0] || 'Ashwini'
+  const studio = data?.studio_name || 'Nirlipta'
+  const desc = data?.blog_page_subtitle || `Notes and reflections from ${teacher}.`
+  return { title: `Blog — ${studio}`, description: desc }
+}
 export const revalidate = 3600
 
 export default async function BlogPage() {

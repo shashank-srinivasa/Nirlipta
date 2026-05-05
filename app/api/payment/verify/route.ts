@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     const supabase = createServiceClient()
     const { data: settings } = await supabase
       .from('studio_settings')
-      .select('razorpay_key_secret, email, teacher_name')
+      .select('razorpay_key_secret, email, teacher_name, studio_name')
       .single()
     const keySecret = settings?.razorpay_key_secret || process.env.RAZORPAY_KEY_SECRET
 
@@ -42,7 +42,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Invalid payment signature' }, { status: 400 })
     }
 
-    const { data: yoga } = await supabase.from('classes').select('title').eq('id', class_id).single()
+    const { data: yoga } = await supabase.from('classes').select('title, max_students').eq('id', class_id).single()
+
+    // Enforce capacity
+    const { count } = await supabase
+      .from('bookings')
+      .select('id', { count: 'exact', head: true })
+      .eq('class_id', class_id)
+      .eq('booking_date', booking_date)
+      .neq('status', 'cancelled')
+    if (yoga?.max_students && (count ?? 0) >= yoga.max_students) {
+      return NextResponse.json({ success: false, error: 'This class is fully booked for that date' }, { status: 409 })
+    }
 
     const { data: booking, error } = await supabase
       .from('bookings')
@@ -62,6 +73,11 @@ export async function POST(req: NextRequest) {
       .single()
 
     if (error) {
+      // Duplicate payment_id = already processed, return success idempotently
+      if (error.code === '23505') {
+        const { data: existing } = await supabase.from('bookings').select('id').eq('payment_id', razorpay_payment_id).single()
+        if (existing) return NextResponse.json({ success: true, bookingId: existing.id })
+      }
       console.error('Booking insert error:', error)
       return NextResponse.json({ success: false, error: 'Failed to save booking' }, { status: 500 })
     }
@@ -79,6 +95,7 @@ export async function POST(req: NextRequest) {
         paymentId: razorpay_payment_id,
         teacherEmail,
         teacherName: settings?.teacher_name || 'Ashwini',
+        studioName: settings?.studio_name || 'Nirlipta',
       })
     }
 
