@@ -60,11 +60,11 @@ export default function Hero({
       {/* Cursor glow */}
       <div ref={glowRef} className="pointer-events-none fixed inset-0 z-0 transition-none" />
 
-      <div className="relative z-10 flex-1 flex flex-col justify-center">
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center text-center">
 
         {/* Studio name */}
         <h1
-          className="w-full font-display font-bold leading-none tracking-[-0.04em] select-none"
+          className="font-display font-bold leading-none tracking-[-0.04em] select-none"
           style={{ fontSize: 'clamp(2.8rem, 16vw, 18vw)' }}
           aria-label={studioName}
         >
