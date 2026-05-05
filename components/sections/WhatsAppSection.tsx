@@ -3,7 +3,7 @@
 import { MessageCircle } from 'lucide-react'
 
 export default function WhatsAppSection({ whatsapp }: { whatsapp: string }) {
-  const msg = `https://wa.me/${whatsapp}?text=Hi%20Ashwini%2C%20I%27d%20like%20to%20know%20more%20about%20your%20classes`
+  const msg = `https://wa.me/${whatsapp.replace(/\D/g, '')}?text=Hi%20Ashwini%2C%20I%27d%20like%20to%20know%20more%20about%20your%20classes`
 
   return (
     <section className="py-24 section-cream relative overflow-hidden warli-bg">

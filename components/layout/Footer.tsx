@@ -50,7 +50,7 @@ export default async function Footer() {
           <div>
             <h4 className="text-white/60 text-xs tracking-[0.18em] uppercase mb-4">Connect</h4>
             <div className="flex gap-3 mb-6">
-              <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noopener noreferrer"
+              <a href={`https://wa.me/${whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer"
                 className="p-2 rounded-full bg-white/5 hover:bg-green-600 text-white/60 hover:text-white transition-colors" aria-label="WhatsApp">
                 <MessageCircle size={15} />
               </a>
