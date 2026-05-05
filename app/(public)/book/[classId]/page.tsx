@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import BookingForm from './BookingForm'
-import { Clock, Users, Calendar, ChevronLeft } from 'lucide-react'
+import { Clock, Users, Calendar, ChevronLeft, Tag } from 'lucide-react'
 import Link from 'next/link'
 import { formatPrice, formatTime } from '@/lib/utils'
 import type { Metadata } from 'next'
@@ -14,8 +14,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: data?.title ? `Book · ${data.title}` : 'Book a class' }
 }
 
-const categoryGlyph: Record<string, string> = {
-  Hatha: '☽', Vinyasa: '◈', Yin: '✦', Meditation: '◎', Power: '⟁', Restorative: '❋',
+const categoryColor: Record<string, string> = {
+  Hatha: 'bg-forest-700/10 text-forest-700',
+  Vinyasa: 'bg-indigo-700/10 text-indigo-700',
+  Yin: 'bg-[#4A2060]/10 text-[#4A2060]',
+  Meditation: 'bg-marigold-400/10 text-marigold-500',
+  Power: 'bg-kumkum-500/10 text-kumkum-500',
+  Restorative: 'bg-forest-600/10 text-forest-600',
 }
 
 export default async function BookingPage({ params, searchParams }: Props) {
@@ -31,52 +36,79 @@ export default async function BookingPage({ params, searchParams }: Props) {
   const studioName = settings?.studio_name || 'Nirlipta'
   const whatsapp = settings?.whatsapp_number || process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '919999999999'
   const paymentMode = settings?.payment_mode || 'whatsapp'
-
-  const glyph = categoryGlyph[yoga.category] || '◎'
+  const catClass = categoryColor[yoga.category] || 'bg-parchment-200 text-ink/60'
 
   return (
-    <div className="min-h-screen bg-ink pt-20">
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-kumkum-500 via-marigold-400 to-forest-700" />
+    <div className="min-h-screen bg-parchment-100 pt-20">
+      <div className="h-1 bg-gradient-to-r from-kumkum-500 via-marigold-400 to-forest-700" />
 
-      <div className="max-w-5xl mx-auto px-6 md:px-12 py-10">
-        <Link href="/classes" className="inline-flex items-center gap-1.5 text-sm text-white/30 hover:text-marigold-300 transition-colors mb-10">
-          <ChevronLeft size={15} /> Back to classes
+      <div className="max-w-4xl mx-auto px-6 md:px-10 py-8">
+        <Link
+          href="/book"
+          className="inline-flex items-center gap-1.5 text-sm text-ink/40 hover:text-ink transition-colors mb-8"
+        >
+          <ChevronLeft size={15} /> Back
         </Link>
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 items-start">
-          {/* Class info */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
+
+          {/* Left — class summary card */}
           <div className="lg:col-span-2">
-            <div className="bg-white/4 border border-white/8 rounded-3xl p-7 sticky top-28">
-              <div className="text-7xl opacity-20 font-display mb-4 leading-none">{glyph}</div>
-              <p className="text-xs text-marigold-400/70 font-medium tracking-[0.2em] uppercase mb-1">{yoga.category}</p>
-              <h1 className="text-2xl font-display font-semibold text-parchment-100 mb-3 leading-tight">{yoga.title}</h1>
+            <div className="bg-white rounded-2xl border border-parchment-300 shadow-sm p-6 sticky top-28">
+              <div className="flex items-center gap-2 mb-4">
+                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider ${catClass}`}>
+                  {yoga.category}
+                </span>
+                {yoga.level && (
+                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-parchment-200 text-ink/50 uppercase tracking-wider">
+                    {yoga.level}
+                  </span>
+                )}
+              </div>
+
+              <h1 className="text-2xl font-display font-semibold text-ink mb-2 leading-tight">{yoga.title}</h1>
+
               {yoga.description && (
-                <p className="text-sm text-white/40 leading-relaxed mb-6">{yoga.description}</p>
+                <p className="text-sm text-ink/55 leading-relaxed mb-5">{yoga.description}</p>
               )}
-              <div className="space-y-2 mb-6">
-                <div className="flex items-center gap-2 text-sm text-white/40">
-                  <Clock size={13} className="text-marigold-400/50" /> {yoga.duration_minutes} minutes
+
+              <div className="space-y-2.5 mb-5">
+                <div className="flex items-center gap-2.5 text-sm text-ink/60">
+                  <Clock size={14} className="text-marigold-500 shrink-0" />
+                  <span>{yoga.duration_minutes} minutes per session</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-white/40">
-                  <Users size={13} className="text-marigold-400/50" /> Max {yoga.max_students} students
+                <div className="flex items-center gap-2.5 text-sm text-ink/60">
+                  <Users size={14} className="text-marigold-500 shrink-0" />
+                  <span>Max {yoga.max_students} students</span>
                 </div>
                 {yoga.schedule_day && (
-                  <div className="flex items-center gap-2 text-sm text-white/40">
-                    <Calendar size={13} className="text-marigold-400/50" />
-                    {yoga.schedule_day?.split(',').map((d: string) => d.trim()).join(', ')}
-                    {yoga.schedule_time ? ` · ${formatTime(yoga.schedule_time)}` : ''}
-                    {yoga.recurrence && yoga.recurrence !== 'one-time' && ` · ${yoga.recurrence}`}
+                  <div className="flex items-start gap-2.5 text-sm text-ink/60">
+                    <Calendar size={14} className="text-marigold-500 shrink-0 mt-0.5" />
+                    <span>
+                      {yoga.schedule_day.split(',').map((d: string) => d.trim()).join(', ')}
+                      {yoga.schedule_time ? ` · ${formatTime(yoga.schedule_time)}` : ''}
+                      {yoga.recurrence && yoga.recurrence !== 'one-time' && (
+                        <span className="ml-1 text-ink/35">({yoga.recurrence})</span>
+                      )}
+                    </span>
+                  </div>
+                )}
+                {yoga.instructor && (
+                  <div className="flex items-center gap-2.5 text-sm text-ink/60">
+                    <Tag size={14} className="text-marigold-500 shrink-0" />
+                    <span>with {yoga.instructor}</span>
                   </div>
                 )}
               </div>
-              <div className="border-t border-white/8 pt-5">
-                <p className="text-2xl font-display font-semibold text-marigold-300">{formatPrice(yoga.price)}</p>
-                <p className="text-xs text-white/25 mt-0.5">per session</p>
+
+              <div className="border-t border-parchment-200 pt-4">
+                <p className="text-2xl font-display font-bold text-ink">{formatPrice(yoga.price)}</p>
+                <p className="text-xs text-ink/35 mt-0.5">per session · inclusive of all</p>
               </div>
             </div>
           </div>
 
-          {/* Chat booking form */}
+          {/* Right — booking form */}
           <div className="lg:col-span-3">
             <BookingForm
               yoga={yoga}
