@@ -39,8 +39,16 @@ export default function BookPage() {
     setDate(toLocalDateStr(new Date(Date.now() + 86400000)))
     fetch('/api/classes')
       .then(r => r.json())
-      .then(data => { setAllClasses(Array.isArray(data) ? data : []); setLoading(false) })
-      .catch(() => setLoading(false))
+      .then(data => {
+        if (Array.isArray(data)) {
+          setAllClasses(data)
+        } else {
+          console.error('[BookPage] /api/classes returned:', data)
+          setAllClasses([])
+        }
+        setLoading(false)
+      })
+      .catch(err => { console.error('[BookPage] fetch error:', err); setLoading(false) })
   }, [])
 
   const matchingClasses = date
@@ -94,7 +102,7 @@ export default function BookPage() {
               <div key={i} className="h-28 rounded-2xl bg-parchment-200 animate-pulse" />
             ))}
           </div>
-        ) : !date ? null : matchingClasses.length === 0 ? (
+        ) : matchingClasses.length === 0 ? (
           <div className="bg-white rounded-2xl border border-parchment-300 p-10 text-center">
             <div className="w-14 h-14 rounded-full bg-parchment-200 flex items-center justify-center mx-auto mb-4">
               <Search size={22} className="text-ink/25" />
