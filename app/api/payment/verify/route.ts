@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { createServiceClient } from '@/lib/supabase/server'
+import { sendBookingReceived } from '@/lib/email'
 
 export async function POST(req: NextRequest) {
   try {
@@ -79,6 +80,22 @@ export async function POST(req: NextRequest) {
       }
       console.error('Booking insert error:', error)
       return NextResponse.json({ success: false, error: 'Failed to save booking' }, { status: 500 })
+    }
+
+    const teacherEmail = settings?.email || process.env.ADMIN_EMAIL || ''
+    if (teacherEmail) {
+      sendBookingReceived({
+        studentName: student_name,
+        studentEmail: student_email,
+        studentPhone: student_phone,
+        classTitle: yoga?.title || 'Yoga class',
+        bookingDate: booking_date,
+        amountPaid: amount_paid,
+        paymentId: razorpay_payment_id,
+        teacherEmail,
+        teacherName: settings?.teacher_name || 'Ashwini',
+        studioName: settings?.studio_name || 'Nirlipta',
+      })
     }
 
     return NextResponse.json({ success: true, bookingId: booking.id })

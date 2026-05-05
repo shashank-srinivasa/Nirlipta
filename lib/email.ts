@@ -1,6 +1,3 @@
-// Sends email via Supabase Edge Functions if configured, otherwise logs to console.
-// For production: set RESEND_API_KEY in environment and wire Resend directly here.
-
 interface BookingEmailData {
   studentName: string
   studentEmail: string
@@ -26,27 +23,42 @@ function formatAmount(paise: number) {
   return `₹${(paise / 100).toFixed(0)}`
 }
 
-function fromAddress(prefix: 'bookings' | 'contact') {
-  if (process.env.RESEND_FROM_EMAIL) return process.env.RESEND_FROM_EMAIL
-  // onboarding@resend.dev works on Resend free plan without domain verification
-  return 'onboarding@resend.dev'
+function fromAddress() {
+  return process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
 }
 
-export async function sendBookingNotification(data: BookingEmailData) {
+async function send(payload: object) {
   const apiKey = process.env.RESEND_API_KEY
-  if (!apiKey) {
-    console.log('[EMAIL] Booking notification (no RESEND_API_KEY set):', data.studentName, data.classTitle)
+  if (!apiKey) return
+  try {
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+  } catch (err) {
+    console.error('[EMAIL] Send failed:', err)
+  }
+}
+
+// Called immediately when a booking is created (status = pending).
+// Notifies teacher + sends student a "received, pending confirmation" ack.
+export async function sendBookingReceived(data: BookingEmailData) {
+  if (!process.env.RESEND_API_KEY) {
+    console.log('[EMAIL] sendBookingReceived (no key):', data.studentName, data.classTitle)
     return
   }
+  const studioName = data.studioName || 'Nirlipta'
 
-  const body = {
-    from: fromAddress('bookings'),
+  // Teacher notification
+  await send({
+    from: fromAddress(),
     to: data.teacherEmail,
-    subject: `New booking: ${data.classTitle} — ${data.studentName}`,
+    subject: `New booking request: ${data.classTitle} — ${data.studentName}`,
     html: `
       <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
-        <h2 style="color:#1a1a1a;margin-bottom:4px">New Booking Confirmed</h2>
-        <p style="color:#666;margin-top:0">Someone just booked a class on your website.</p>
+        <h2 style="color:#1a1a1a;margin-bottom:4px">New Booking Request</h2>
+        <p style="color:#666;margin-top:0">A student has requested a class. Go to your dashboard to confirm.</p>
         <table style="width:100%;border-collapse:collapse;margin:24px 0">
           <tr><td style="padding:10px 0;border-bottom:1px solid #eee;color:#666;width:40%">Class</td><td style="padding:10px 0;border-bottom:1px solid #eee;font-weight:600">${data.classTitle}</td></tr>
           <tr><td style="padding:10px 0;border-bottom:1px solid #eee;color:#666">Date</td><td style="padding:10px 0;border-bottom:1px solid #eee;font-weight:600">${data.bookingDate}</td></tr>
@@ -56,32 +68,21 @@ export async function sendBookingNotification(data: BookingEmailData) {
           <tr><td style="padding:10px 0;color:#666">Amount</td><td style="padding:10px 0;font-weight:700;color:#16a34a">${formatAmount(data.amountPaid)}</td></tr>
         </table>
         ${data.paymentId ? `<p style="font-size:12px;color:#999">Payment ID: ${data.paymentId}</p>` : ''}
-        <p style="font-size:13px;color:#888">— Nirlipta booking system</p>
+        <p style="font-size:13px;color:#888">— ${studioName} booking system</p>
       </div>
     `,
-  }
+  })
 
-  try {
-    await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    })
-  } catch (err) {
-    console.error('[EMAIL] Failed to send booking notification:', err)
-  }
-
-  // Student confirmation
+  // Student acknowledgement — "we got it, pending confirmation"
   if (!data.studentEmail) return
-  const studioName = data.studioName || 'the studio'
-  const studentBody = {
-    from: fromAddress('bookings'),
+  await send({
+    from: fromAddress(),
     to: data.studentEmail,
-    subject: `Booking confirmed — ${data.classTitle}`,
+    subject: `Booking received — ${data.classTitle}`,
     html: `
       <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
-        <h2 style="color:#1a1a1a;margin-bottom:4px">You&apos;re booked!</h2>
-        <p style="color:#666;margin-top:0">Hi ${data.studentName}, your spot is confirmed. See you on the mat.</p>
+        <h2 style="color:#1a1a1a;margin-bottom:4px">We received your booking!</h2>
+        <p style="color:#666;margin-top:0">Hi ${data.studentName}, your request has been received. ${data.teacherName} will confirm your spot shortly.</p>
         <table style="width:100%;border-collapse:collapse;margin:24px 0">
           <tr><td style="padding:10px 0;border-bottom:1px solid #eee;color:#666;width:40%">Class</td><td style="padding:10px 0;border-bottom:1px solid #eee;font-weight:600">${data.classTitle}</td></tr>
           <tr><td style="padding:10px 0;border-bottom:1px solid #eee;color:#666">Date</td><td style="padding:10px 0;border-bottom:1px solid #eee;font-weight:600">${data.bookingDate}</td></tr>
@@ -91,27 +92,44 @@ export async function sendBookingNotification(data: BookingEmailData) {
         <p style="font-size:13px;color:#888">— ${studioName}</p>
       </div>
     `,
+  })
+}
+
+// Called when admin confirms a booking. Sends student the confirmed email only.
+export async function sendBookingConfirmed(data: BookingEmailData) {
+  if (!process.env.RESEND_API_KEY) {
+    console.log('[EMAIL] sendBookingConfirmed (no key):', data.studentName, data.classTitle)
+    return
   }
-  try {
-    await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(studentBody),
-    })
-  } catch (err) {
-    console.error('[EMAIL] Failed to send student confirmation:', err)
-  }
+  if (!data.studentEmail) return
+  const studioName = data.studioName || 'Nirlipta'
+
+  await send({
+    from: fromAddress(),
+    to: data.studentEmail,
+    subject: `Booking confirmed — ${data.classTitle}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
+        <h2 style="color:#1a1a1a;margin-bottom:4px">You're confirmed!</h2>
+        <p style="color:#666;margin-top:0">Hi ${data.studentName}, your spot is confirmed. See you on the mat.</p>
+        <table style="width:100%;border-collapse:collapse;margin:24px 0">
+          <tr><td style="padding:10px 0;border-bottom:1px solid #eee;color:#666;width:40%">Class</td><td style="padding:10px 0;border-bottom:1px solid #eee;font-weight:600">${data.classTitle}</td></tr>
+          <tr><td style="padding:10px 0;border-bottom:1px solid #eee;color:#666">Date</td><td style="padding:10px 0;border-bottom:1px solid #eee;font-weight:600">${data.bookingDate}</td></tr>
+          <tr><td style="padding:10px 0;color:#666">Amount paid</td><td style="padding:10px 0;font-weight:700;color:#16a34a">${formatAmount(data.amountPaid)}</td></tr>
+        </table>
+        <p style="font-size:13px;color:#888">— ${studioName}</p>
+      </div>
+    `,
+  })
 }
 
 export async function sendContactNotification(data: ContactEmailData) {
-  const apiKey = process.env.RESEND_API_KEY
-  if (!apiKey) {
-    console.log('[EMAIL] Contact notification (no RESEND_API_KEY set):', data.fromName, data.fromEmail)
+  if (!process.env.RESEND_API_KEY) {
+    console.log('[EMAIL] sendContactNotification (no key):', data.fromName)
     return
   }
-
-  const body = {
-    from: fromAddress('contact'),
+  await send({
+    from: fromAddress(),
     to: data.teacherEmail,
     reply_to: data.fromEmail,
     subject: `New message from ${data.fromName}`,
@@ -130,15 +148,5 @@ export async function sendContactNotification(data: ContactEmailData) {
         <p style="font-size:13px;color:#888;margin-top:16px">Hit Reply to respond directly to ${data.fromName}.</p>
       </div>
     `,
-  }
-
-  try {
-    await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    })
-  } catch (err) {
-    console.error('[EMAIL] Failed to send contact notification:', err)
-  }
+  })
 }

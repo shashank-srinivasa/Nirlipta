@@ -136,7 +136,7 @@ export default function AdminBookingsPage() {
                       <div className="flex items-center gap-1.5">
                         <select
                           value={b.status}
-                          onChange={e => updateStatus(b.id, e.target.value)}
+                          onChange={e => updateStatus(b.id, e.target.value, e.target.value === 'confirmed' && b.status !== 'confirmed')}
                           className={`text-xs font-medium px-2.5 py-1 rounded-full border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-sage-400 ${statusColors[b.status] || 'bg-gray-100 text-gray-600'}`}
                         >
                           <option value="confirmed">confirmed</option>

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { createServiceClient } from '@/lib/supabase/server'
 import { isValidToken } from '@/lib/admin-tokens'
-import { sendBookingNotification } from '@/lib/email'
+import { sendBookingConfirmed } from '@/lib/email'
 
 function auth(req: NextRequest) {
   const token = req.headers.get('x-admin-token') || req.cookies.get('admin_token')?.value
@@ -53,7 +53,7 @@ export async function PUT(req: NextRequest) {
       .select('email, teacher_name, studio_name')
       .single()
     if (booking?.student_email) {
-      sendBookingNotification({
+      sendBookingConfirmed({
         studentName: booking.student_name,
         studentEmail: booking.student_email,
         studentPhone: booking.student_phone,
