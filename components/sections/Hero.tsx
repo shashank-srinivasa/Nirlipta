@@ -95,14 +95,11 @@ export default function Hero({
 
         {/* Three practice words */}
         <div
-          className="mt-6 flex items-center gap-4 select-none"
+          className="mt-6 flex items-center gap-8 select-none"
           style={fadeIn(600)}
         >
-          {['Hatha', 'Vinyasa', 'Pranayama'].map((word, i) => (
-            <span key={word} className="flex items-center gap-4">
-              <span className="text-white/45 text-sm md:text-base font-display tracking-wide">{word}</span>
-              {i < 2 && <span className="text-white/15 text-xs">·</span>}
-            </span>
+          {['Hatha', 'Vinyasa', 'Pranayama'].map((word) => (
+            <span key={word} className="text-white/45 text-sm md:text-base font-display tracking-wide">{word}</span>
           ))}
         </div>
 
