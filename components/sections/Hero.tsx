@@ -62,36 +62,36 @@ export default function Hero({
 
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center text-center">
 
-        {/* Teacher name above title */}
-        <p
-          className="mb-3 text-xs font-bold tracking-[0.22em] uppercase text-white/40 select-none"
-          style={fadeIn(0)}
-        >
-          {teacher}&rsquo;s
-        </p>
-
-        {/* Studio name */}
-        <h1
-          className="font-display font-bold leading-none tracking-[-0.04em] select-none"
-          style={{ fontSize: 'clamp(2.8rem, 16vw, 18vw)' }}
-          aria-label={studioName}
-        >
-          {CHARS.map((ch, i) => (
-            <span
-              key={i}
-              className="inline-block"
-              style={{
-                color: i === 0 ? '#F5A820' : 'rgba(250,246,236,0.92)',
-                opacity: revealed ? 1 : 0,
-                transform: revealed ? 'translateY(0)' : 'translateY(60px)',
-                transition: `opacity 0.6s ease, transform 0.7s cubic-bezier(0.16,1,0.3,1)`,
-                transitionDelay: `${i * 60}ms`,
-              }}
-            >
-              {ch}
-            </span>
-          ))}
-        </h1>
+        {/* Teacher name + studio name grouped so label sits above the N */}
+        <div className="inline-flex flex-col items-start">
+          <p
+            className="mb-1 text-xs font-bold tracking-[0.22em] uppercase text-white/40 select-none"
+            style={fadeIn(0)}
+          >
+            {teacher}&rsquo;s
+          </p>
+          <h1
+            className="font-display font-bold leading-none tracking-[-0.04em] select-none"
+            style={{ fontSize: 'clamp(2.8rem, 16vw, 18vw)' }}
+            aria-label={studioName}
+          >
+            {CHARS.map((ch, i) => (
+              <span
+                key={i}
+                className="inline-block"
+                style={{
+                  color: i === 0 ? '#F5A820' : 'rgba(250,246,236,0.92)',
+                  opacity: revealed ? 1 : 0,
+                  transform: revealed ? 'translateY(0)' : 'translateY(60px)',
+                  transition: `opacity 0.6s ease, transform 0.7s cubic-bezier(0.16,1,0.3,1)`,
+                  transitionDelay: `${i * 60}ms`,
+                }}
+              >
+                {ch}
+              </span>
+            ))}
+          </h1>
+        </div>
 
         {/* Three practice words */}
         <div
