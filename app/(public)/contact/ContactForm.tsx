@@ -4,21 +4,33 @@ import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { Loader2, Check } from 'lucide-react'
 
+type FormFields = { name: string; email: string; phone: string; message: string }
+type Errors = Partial<Record<keyof FormFields, string>>
+
 export default function ContactForm() {
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
-  const [form, setForm] = useState({ name: '', email: '', phone: '', message: '' })
+  const [form, setForm] = useState<FormFields>({ name: '', email: '', phone: '', message: '' })
+  const [errors, setErrors] = useState<Errors>({})
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+  const set = (key: keyof FormFields) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setForm(p => ({ ...p, [key]: e.target.value }))
+    setErrors(p => ({ ...p, [key]: undefined }))
+  }
+
+  const validate = (): boolean => {
+    const e: Errors = {}
+    if (!form.name.trim()) e.name = 'Please enter your name'
+    if (!form.email.trim()) e.email = 'Please enter your email'
+    else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = 'Enter a valid email address'
+    if (!form.message.trim()) e.message = 'Please write a message'
+    setErrors(e)
+    return Object.keys(e).length === 0
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!form.name.trim() || !form.email.trim() || !form.message.trim()) {
-      toast.error('Please fill in all required fields')
-      return
-    }
+    if (!validate()) return
     setLoading(true)
     try {
       const res = await fetch('/api/contact', {
@@ -36,7 +48,12 @@ export default function ContactForm() {
     }
   }
 
-  const inputClass = "w-full px-4 py-3 rounded-xl border border-parchment-300 bg-parchment-50/50 focus:outline-none focus:ring-2 focus:ring-marigold-400 focus:border-transparent text-sm text-ink placeholder:text-ink/30 transition"
+  const inputClass = (key: keyof FormFields) =>
+    `w-full px-4 py-3 rounded-xl border bg-parchment-50/50 focus:outline-none focus:ring-2 focus:border-transparent text-sm text-ink placeholder:text-ink/30 transition ${
+      errors[key]
+        ? 'border-red-400 focus:ring-red-300'
+        : 'border-parchment-300 focus:ring-marigold-400'
+    }`
 
   if (sent) {
     return (
@@ -53,28 +70,31 @@ export default function ContactForm() {
   return (
     <div className="card-base p-8">
       <h2 className="text-xl font-display font-semibold text-ink mb-6">Send a message</h2>
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} noValidate className="space-y-5">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div>
             <label className="block text-xs font-medium text-ink/50 uppercase tracking-wide mb-1.5">Name *</label>
-            <input type="text" name="name" value={form.name} onChange={handleChange} required
-              placeholder="Your name" className={inputClass} />
+            <input type="text" value={form.name} onChange={set('name')}
+              placeholder="Your name" className={inputClass('name')} />
+            {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
           </div>
           <div>
             <label className="block text-xs font-medium text-ink/50 uppercase tracking-wide mb-1.5">Phone</label>
-            <input type="tel" name="phone" value={form.phone} onChange={handleChange}
-              placeholder="+91 98765 43210" className={inputClass} />
+            <input type="tel" value={form.phone} onChange={set('phone')}
+              placeholder="+91 98765 43210" className={inputClass('phone')} />
           </div>
         </div>
         <div>
           <label className="block text-xs font-medium text-ink/50 uppercase tracking-wide mb-1.5">Email *</label>
-          <input type="email" name="email" value={form.email} onChange={handleChange} required
-            placeholder="you@example.com" className={inputClass} />
+          <input type="email" value={form.email} onChange={set('email')}
+            placeholder="you@example.com" className={inputClass('email')} />
+          {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
         </div>
         <div>
           <label className="block text-xs font-medium text-ink/50 uppercase tracking-wide mb-1.5">Message *</label>
-          <textarea name="message" value={form.message} onChange={handleChange} required rows={5}
-            placeholder="What would you like to know..." className={inputClass + ' resize-none'} />
+          <textarea value={form.message} onChange={set('message')} rows={5}
+            placeholder="What would you like to know..." className={inputClass('message') + ' resize-none'} />
+          {errors.message && <p className="text-xs text-red-500 mt-1">{errors.message}</p>}
         </div>
         <button type="submit" disabled={loading}
           className="btn-marigold w-full py-3.5 flex items-center justify-center gap-2 disabled:opacity-60">

@@ -2,15 +2,34 @@
 
 import { useState } from 'react'
 
+type FormFields = { name: string; role: string; text: string }
+type Errors = Partial<Record<keyof FormFields, string>>
+
 export default function ReviewForm() {
-  const [form, setForm] = useState({ name: '', role: '', text: '' })
+  const [form, setForm] = useState<FormFields>({ name: '', role: '', text: '' })
+  const [errors, setErrors] = useState<Errors>({})
   const [status, setStatus] = useState<'idle' | 'submitting' | 'done' | 'error'>('idle')
-  const [error, setError] = useState('')
+  const [serverError, setServerError] = useState('')
+
+  const set = (key: keyof FormFields) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setForm(p => ({ ...p, [key]: e.target.value }))
+    setErrors(p => ({ ...p, [key]: undefined }))
+  }
+
+  const validate = (): boolean => {
+    const e: Errors = {}
+    if (!form.name.trim()) e.name = 'Please enter your name'
+    if (!form.text.trim()) e.text = 'Please write your review'
+    else if (form.text.trim().length < 20) e.text = 'Review is too short — write at least a sentence'
+    setErrors(e)
+    return Object.keys(e).length === 0
+  }
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!validate()) return
     setStatus('submitting')
-    setError('')
+    setServerError('')
     try {
       const res = await fetch('/api/testimonials', {
         method: 'POST',
@@ -18,13 +37,20 @@ export default function ReviewForm() {
         body: JSON.stringify(form),
       })
       const data = await res.json()
-      if (!res.ok) { setError(data.error || 'Something went wrong'); setStatus('error'); return }
+      if (!res.ok) { setServerError(data.error || 'Something went wrong'); setStatus('error'); return }
       setStatus('done')
     } catch {
-      setError('Something went wrong. Please try again.')
+      setServerError('Something went wrong. Please try again.')
       setStatus('error')
     }
   }
+
+  const inputClass = (key: keyof FormFields) =>
+    `w-full px-4 py-3 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:border-transparent bg-white/80 transition ${
+      errors[key]
+        ? 'border-red-400 focus:ring-red-300'
+        : 'border-gray-200 focus:ring-sage-400'
+    }`
 
   if (status === 'done') {
     return (
@@ -37,47 +63,29 @@ export default function ReviewForm() {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-4">
+    <form onSubmit={submit} noValidate className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-ink mb-1.5">Your name <span className="text-terracotta-400">*</span></label>
-          <input
-            type="text"
-            value={form.name}
-            onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
-            placeholder="Priya Sharma"
-            required
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sage-400 bg-white/80"
-          />
+          <input type="text" value={form.name} onChange={set('name')}
+            placeholder="Priya Sharma" className={inputClass('name')} />
+          {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
         </div>
         <div>
           <label className="block text-sm font-medium text-ink mb-1.5">How long have you practiced? <span className="text-gray-400 font-normal">(optional)</span></label>
-          <input
-            type="text"
-            value={form.role}
-            onChange={e => setForm(p => ({ ...p, role: e.target.value }))}
-            placeholder="Student since 2022"
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sage-400 bg-white/80"
-          />
+          <input type="text" value={form.role} onChange={set('role')}
+            placeholder="Student since 2022" className={inputClass('role')} />
         </div>
       </div>
       <div>
         <label className="block text-sm font-medium text-ink mb-1.5">Your review <span className="text-terracotta-400">*</span></label>
-        <textarea
-          rows={4}
-          value={form.text}
-          onChange={e => setForm(p => ({ ...p, text: e.target.value }))}
+        <textarea rows={4} value={form.text} onChange={set('text')}
           placeholder="Share what your experience has been like..."
-          required
-          className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sage-400 resize-none bg-white/80"
-        />
+          className={inputClass('text') + ' resize-none'} />
+        {errors.text && <p className="text-xs text-red-500 mt-1">{errors.text}</p>}
       </div>
-      {status === 'error' && <p className="text-sm text-red-500">{error}</p>}
-      <button
-        type="submit"
-        disabled={status === 'submitting'}
-        className="btn-primary disabled:opacity-60"
-      >
+      {serverError && <p className="text-sm text-red-500">{serverError}</p>}
+      <button type="submit" disabled={status === 'submitting'} className="btn-primary disabled:opacity-60">
         {status === 'submitting' ? 'Submitting…' : 'Submit review'}
       </button>
     </form>
