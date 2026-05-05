@@ -1,8 +1,17 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 
-export default function Hero({ studioName = 'Nirlipta', tagline }: { studioName?: string; tagline?: string | null }) {
+export default function Hero({
+  studioName = 'Nirlipta',
+  tagline,
+  teacherName,
+}: {
+  studioName?: string
+  tagline?: string | null
+  teacherName?: string | null
+}) {
   const CHARS = studioName.toUpperCase().split('')
   const [revealed, setRevealed] = useState(false)
   const glowRef = useRef<HTMLDivElement>(null)
@@ -38,14 +47,22 @@ export default function Hero({ studioName = 'Nirlipta', tagline }: { studioName?
     }
   }, [])
 
+  const teacher = teacherName || 'Ashwini Karmbadka'
+  const fadeIn = (delay: number) => ({
+    opacity: revealed ? 1 : 0,
+    transition: 'opacity 0.9s ease',
+    transitionDelay: `${delay}ms`,
+  })
+
   return (
     <section className="relative min-h-screen bg-ink flex flex-col justify-center overflow-hidden px-6 md:px-12">
 
       {/* Cursor glow */}
       <div ref={glowRef} className="pointer-events-none fixed inset-0 z-0 transition-none" />
 
-      {/* Main display name */}
       <div className="relative z-10 flex-1 flex flex-col justify-center">
+
+        {/* Studio name */}
         <h1
           className="w-full font-display font-bold leading-none tracking-[-0.04em] select-none"
           style={{ fontSize: 'clamp(2.8rem, 16vw, 18vw)' }}
@@ -68,24 +85,44 @@ export default function Hero({ studioName = 'Nirlipta', tagline }: { studioName?
           ))}
         </h1>
 
-        {/* Tagline */}
-        <div
-          className="flex items-center justify-center gap-5 mt-8 select-none"
-          style={{ opacity: revealed ? 1 : 0, transition: 'opacity 1s ease', transitionDelay: '600ms' }}
+        {/* Teacher + location */}
+        <p
+          className="mt-4 text-xs tracking-[0.28em] uppercase text-white/30 select-none"
+          style={fadeIn(500)}
         >
-          {tagline ? (
-            <span className="text-white/50 text-base md:text-2xl font-display font-medium tracking-tight text-center">
-              {tagline}
-            </span>
-          ) : (
-            ['Sthira', 'Sukha', 'Prana'].map((word, i) => (
-              <span key={word} className="flex items-center gap-5">
-                <span className="text-white/50 text-lg md:text-3xl font-display font-bold tracking-tight">{word}</span>
-                {i < 2 && <span className="text-white/20">·</span>}
-              </span>
-            ))
-          )}
+          {`by ${teacher}`}&ensp;·&ensp;Bengaluru
+        </p>
+
+        {/* Tagline */}
+        <p
+          className="mt-5 font-display italic text-white/50 select-none"
+          style={{ ...fadeIn(650), fontSize: 'clamp(1.1rem, 3vw, 1.6rem)' }}
+        >
+          {tagline || 'Hatha & Vinyasa yoga'}
+        </p>
+
+        {/* Divider */}
+        <div
+          className="mt-8 w-10 h-px bg-marigold-400/40"
+          style={fadeIn(800)}
+        />
+
+        {/* CTAs */}
+        <div className="mt-7 flex items-center gap-8" style={fadeIn(900)}>
+          <Link
+            href="/book"
+            className="text-marigold-400 text-sm tracking-wide hover:text-marigold-300 transition-colors duration-300"
+          >
+            Book a class&ensp;→
+          </Link>
+          <Link
+            href="/classes"
+            className="text-white/30 text-sm tracking-wide hover:text-white/60 transition-colors duration-300"
+          >
+            See schedule
+          </Link>
         </div>
+
       </div>
 
       {/* Bottom accent stripe */}

@@ -30,7 +30,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <Hero studioName={studioName} tagline={settings?.tagline} />
+      <Hero studioName={studioName} tagline={settings?.tagline} teacherName={settings?.teacher_name} />
       <WhatsAppSection whatsapp={whatsapp} teacherName={settings?.teacher_name} />
     </>
   )
