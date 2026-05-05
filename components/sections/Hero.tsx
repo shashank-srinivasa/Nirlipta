@@ -62,6 +62,14 @@ export default function Hero({
 
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center text-center">
 
+        {/* Teacher name above title */}
+        <p
+          className="mb-4 text-xs font-bold tracking-[0.22em] uppercase text-white/40 select-none"
+          style={fadeIn(0)}
+        >
+          {teacher}
+        </p>
+
         {/* Studio name */}
         <h1
           className="font-display font-bold leading-none tracking-[-0.04em] select-none"
@@ -85,39 +93,30 @@ export default function Hero({
           ))}
         </h1>
 
-        {/* Teacher + location */}
-        <p
-          className="mt-4 text-xs tracking-[0.28em] uppercase text-white/30 select-none"
-          style={fadeIn(500)}
-        >
-          {`by ${teacher}`}&ensp;·&ensp;Bengaluru
-        </p>
-
-        {/* Tagline */}
-        <p
-          className="mt-5 font-display italic text-white/50 select-none"
-          style={{ ...fadeIn(650), fontSize: 'clamp(1.1rem, 3vw, 1.6rem)' }}
-        >
-          {tagline || 'Hatha, Vinyasa & Pranayama'}
-        </p>
-
-        {/* Divider */}
+        {/* Three practice words */}
         <div
-          className="mt-8 w-10 h-px bg-marigold-400/40"
-          style={fadeIn(800)}
-        />
+          className="mt-6 flex items-center gap-4 select-none"
+          style={fadeIn(600)}
+        >
+          {['Hatha', 'Vinyasa', 'Pranayama'].map((word, i) => (
+            <span key={word} className="flex items-center gap-4">
+              <span className="text-white/45 text-sm md:text-base font-display tracking-wide">{word}</span>
+              {i < 2 && <span className="text-white/15 text-xs">·</span>}
+            </span>
+          ))}
+        </div>
 
-        {/* CTAs */}
-        <div className="mt-7 flex items-center gap-8" style={fadeIn(900)}>
+        {/* CTA bubbles */}
+        <div className="mt-10 flex items-center gap-4" style={fadeIn(800)}>
           <Link
             href="/book"
-            className="text-marigold-400 text-sm tracking-wide hover:text-marigold-300 transition-colors duration-300"
+            className="px-6 py-2.5 rounded-full bg-marigold-400 text-ink text-sm font-semibold tracking-wide hover:bg-marigold-300 transition-colors duration-300"
           >
-            Book a class&ensp;→
+            Book a class
           </Link>
           <Link
             href="/classes"
-            className="text-white/30 text-sm tracking-wide hover:text-white/60 transition-colors duration-300"
+            className="px-6 py-2.5 rounded-full border border-white/20 text-white/60 text-sm font-medium tracking-wide hover:border-white/40 hover:text-white/90 transition-colors duration-300"
           >
             See schedule
           </Link>
