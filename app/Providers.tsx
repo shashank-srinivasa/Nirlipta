@@ -1,8 +1,15 @@
 'use client'
 
 import { Toaster } from 'react-hot-toast'
+import { useEffect } from 'react'
 
 export default function Providers() {
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {})
+    }
+  }, [])
+
   return (
     <Toaster
       position="top-center"

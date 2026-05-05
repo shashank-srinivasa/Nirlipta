@@ -8,6 +8,17 @@ export const metadata: Metadata = {
     template: '%s | Nirlipta by Ashwini',
   },
   description: 'Nirlipta by Ashwini Karmbadka. Hatha & Vinyasa. Bengaluru and Puttur.',
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Nirlipta',
+  },
+  formatDetection: { telephone: false },
+  themeColor: [
+    { media: '(prefers-color-scheme: dark)', color: '#1C1408' },
+    { media: '(prefers-color-scheme: light)', color: '#F5A820' },
+  ],
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
