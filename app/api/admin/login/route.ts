@@ -24,6 +24,17 @@ function hashPassword(password: string): string {
   return crypto.createHash('sha256').update(password + (process.env.ADMIN_TOKEN_SECRET || process.env.ADMIN_PASSWORD || 'salt')).digest('hex')
 }
 
+function tokenResponse(token: string) {
+  const res = NextResponse.json({ success: true, token })
+  res.cookies.set('admin_token', token, {
+    httpOnly: false, // must be readable by client JS for adminFetch
+    sameSite: 'lax',
+    path: '/admin',
+    maxAge: 15 * 60, // 15 minutes, matches TOKEN_TTL_MS
+  })
+  return res
+}
+
 export async function POST(req: NextRequest) {
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
   if (!checkRateLimit(ip)) {
@@ -47,13 +58,13 @@ export async function POST(req: NextRequest) {
       const hash = hashPassword(password)
       if (hash !== adminUser.password_hash) return NextResponse.json({ success: false }, { status: 401 })
       const token = createToken()
-      return NextResponse.json({ success: true, token })
+      return tokenResponse(token)
     }
 
     // Fallback: env var credentials (for initial setup)
     if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
       const token = createToken()
-      return NextResponse.json({ success: true, token })
+      return tokenResponse(token)
     }
 
     return NextResponse.json({ success: false }, { status: 401 })

@@ -23,6 +23,7 @@ export default function AdminSidebar() {
 
   const logout = () => {
     localStorage.removeItem('admin_token')
+    document.cookie = 'admin_token=; path=/admin; max-age=0'
     router.push('/admin/login')
   }
 
