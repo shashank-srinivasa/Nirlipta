@@ -1,6 +1,4 @@
 import Hero from '@/components/sections/Hero'
-import FeaturedClasses from '@/components/sections/FeaturedClasses'
-import Testimonials from '@/components/sections/Testimonials'
 import WhatsAppSection from '@/components/sections/WhatsAppSection'
 import { createClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
@@ -22,10 +20,10 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function HomePage() {
   const supabase = createClient()
-  const [{ data: settings }, { data: classes }] = await Promise.all([
-    supabase.from('studio_settings').select('studio_name, tagline, whatsapp_number, teacher_name').single(),
-    supabase.from('classes').select('*').eq('is_active', true).order('category').limit(3),
-  ])
+  const { data: settings } = await supabase
+    .from('studio_settings')
+    .select('studio_name, tagline, whatsapp_number, teacher_name')
+    .single()
 
   const studioName = settings?.studio_name || 'Nirlipta'
   const whatsapp = settings?.whatsapp_number || '919999999999'
@@ -33,8 +31,6 @@ export default async function HomePage() {
   return (
     <>
       <Hero studioName={studioName} tagline={settings?.tagline} />
-      {classes && classes.length > 0 && <FeaturedClasses classes={classes} />}
-      <Testimonials />
       <WhatsAppSection whatsapp={whatsapp} teacherName={settings?.teacher_name} />
     </>
   )
