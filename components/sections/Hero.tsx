@@ -66,7 +66,7 @@ export default function Hero({
         <div className="inline-flex flex-col items-start">
           <p
             className="text-[9px] md:text-xs font-bold tracking-[0.12em] md:tracking-[0.22em] uppercase text-white/40 select-none leading-none"
-            style={{ ...fadeIn(0), marginBottom: '-0.15em' }}
+            style={{ ...fadeIn(0), marginBottom: 'clamp(-0.8rem, -4vw, -4.5rem)' }}
           >
             {teacher}&rsquo;s
           </p>
