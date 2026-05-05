@@ -9,6 +9,14 @@ export function formatPrice(paise: number): string {
   return `₹${(paise / 100).toLocaleString('en-IN')}`
 }
 
+export function formatTime(time: string): string {
+  if (!time) return ''
+  const [h, m] = time.split(':').map(Number)
+  const ampm = h >= 12 ? 'PM' : 'AM'
+  const hour = h % 12 || 12
+  return `${hour}:${String(m).padStart(2, '0')} ${ampm}`
+}
+
 export function formatDate(date: string): string {
   return new Date(date).toLocaleDateString('en-IN', {
     day: 'numeric',

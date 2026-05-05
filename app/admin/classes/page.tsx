@@ -18,7 +18,7 @@ type ClassForm = {
 
 const EMPTY_CLASS: ClassForm = {
   title: '', description: '', instructor: 'Priya', duration_minutes: 60,
-  level: 'All Levels', price: 50000, max_students: 10,
+  level: 'All Levels', price: 500, max_students: 10,
   schedule_day: '', schedule_time: '', category: 'Hatha', is_active: true, image_url: '',
 }
 
@@ -41,7 +41,7 @@ export default function AdminClassesPage() {
     setEditing(c)
     setForm({
       title: c.title, description: c.description || '', instructor: c.instructor,
-      duration_minutes: c.duration_minutes, level: c.level as ClassFormLevel, price: c.price,
+      duration_minutes: c.duration_minutes, level: c.level as ClassFormLevel, price: c.price / 100,
       max_students: c.max_students, schedule_day: c.schedule_day || '',
       schedule_time: c.schedule_time || '', category: c.category,
       is_active: c.is_active, image_url: c.image_url || '',
@@ -52,7 +52,7 @@ export default function AdminClassesPage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
-    const payload = { ...form, price: Number(form.price), duration_minutes: Number(form.duration_minutes), max_students: Number(form.max_students) }
+    const payload = { ...form, price: Math.round(Number(form.price) * 100), duration_minutes: Number(form.duration_minutes), max_students: Number(form.max_students) }
     const res = editing
       ? await adminFetch('/api/admin/classes', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: editing.id, ...payload }) })
       : await adminFetch('/api/admin/classes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
@@ -127,11 +127,9 @@ export default function AdminClassesPage() {
                 {[
                   { label: 'Title', key: 'title', type: 'text', required: true },
                   { label: 'Instructor', key: 'instructor', type: 'text', required: true },
-                  { label: 'Price (paise, e.g. 50000 = ₹500)', key: 'price', type: 'number', required: true },
+                  { label: 'Price (₹)', key: 'price', type: 'number', required: true },
                   { label: 'Duration (minutes)', key: 'duration_minutes', type: 'number', required: true },
                   { label: 'Max Students', key: 'max_students', type: 'number', required: true },
-                  { label: 'Schedule Day', key: 'schedule_day', type: 'text' },
-                  { label: 'Schedule Time (e.g. 06:30 AM)', key: 'schedule_time', type: 'text' },
                   { label: 'Image URL (optional)', key: 'image_url', type: 'url' },
                 ].map(({ label, key, type, required }) => (
                   <div key={key}>
@@ -143,6 +141,21 @@ export default function AdminClassesPage() {
                     />
                   </div>
                 ))}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Schedule Day</label>
+                    <select value={form.schedule_day} onChange={(e) => setForm((p) => ({ ...p, schedule_day: e.target.value }))}
+                      className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sage-400">
+                      <option value="">— pick a day —</option>
+                      {['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].map(d => <option key={d}>{d}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Schedule Time</label>
+                    <input type="time" value={form.schedule_time} onChange={(e) => setForm((p) => ({ ...p, schedule_time: e.target.value }))}
+                      className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sage-400" />
+                  </div>
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Level</label>
                   <select value={form.level} onChange={(e) => setForm((p) => ({ ...p, level: e.target.value as any }))}
@@ -152,10 +165,15 @@ export default function AdminClassesPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                  <select value={form.category} onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}
-                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sage-400">
-                    {['Hatha', 'Vinyasa', 'Yin', 'Meditation', 'Power', 'Restorative'].map((c) => <option key={c}>{c}</option>)}
-                  </select>
+                  <input
+                    type="text" value={form.category} list="category-suggestions"
+                    onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}
+                    placeholder="e.g. Hatha, Vinyasa, Yin..."
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sage-400"
+                  />
+                  <datalist id="category-suggestions">
+                    {['Hatha', 'Vinyasa', 'Yin', 'Meditation', 'Power', 'Restorative', 'Prenatal', 'Chair Yoga'].map(c => <option key={c} value={c} />)}
+                  </datalist>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>

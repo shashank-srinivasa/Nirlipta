@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import BookingForm from './BookingForm'
 import { Clock, Users, Calendar, ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
-import { formatPrice } from '@/lib/utils'
+import { formatPrice, formatTime } from '@/lib/utils'
 import type { Metadata } from 'next'
 
 interface Props { params: { classId: string } }
@@ -62,7 +62,7 @@ export default async function BookingPage({ params }: Props) {
                 </div>
                 {yoga.schedule_day && (
                   <div className="flex items-center gap-2 text-sm text-white/40">
-                    <Calendar size={13} className="text-marigold-400/50" /> {yoga.schedule_day}s · {yoga.schedule_time}
+                    <Calendar size={13} className="text-marigold-400/50" /> {yoga.schedule_day}s · {formatTime(yoga.schedule_time)}
                   </div>
                 )}
               </div>

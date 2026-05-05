@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { Class } from '@/types'
-import { formatPrice } from '@/lib/utils'
+import { formatPrice, formatTime } from '@/lib/utils'
 import { Loader2, MessageCircle, CreditCard } from 'lucide-react'
 
 declare global { interface Window { Razorpay: any } }
@@ -62,7 +62,7 @@ export default function BookingForm({
 
   const minDate = getValidDates(yoga.schedule_day)
   const scheduleHint = yoga.schedule_day
-    ? `This class runs on ${yoga.schedule_day}s${yoga.schedule_time ? ` at ${yoga.schedule_time}` : ''}`
+    ? `This class runs on ${yoga.schedule_day}s${yoga.schedule_time ? ` at ${formatTime(yoga.schedule_time)}` : ''}`
     : null
 
   const validate = () => {
