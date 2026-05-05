@@ -49,7 +49,7 @@ export default function About({
             <div className="absolute -top-4 -left-4 w-full h-full rounded-3xl border border-marigold-400/25 pointer-events-none" />
             <div className="absolute -bottom-4 -right-4 w-32 h-32 rounded-full border-2 border-kumkum-400/15 pointer-events-none" />
 
-            <div className="aspect-[4/3] sm:aspect-[4/5] relative rounded-3xl overflow-hidden bg-parchment-200">
+            <div className="aspect-[3/4] sm:aspect-[4/5] relative rounded-3xl overflow-hidden bg-parchment-200">
               {teacherPhotoUrl ? (
                 <>
                   {/* eslint-disable-next-line @next/next/no-img-element */}

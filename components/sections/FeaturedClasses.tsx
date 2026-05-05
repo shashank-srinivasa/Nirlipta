@@ -10,7 +10,7 @@ export default function FeaturedClasses({ classes }: FeaturedClassesProps) {
       <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-forest-700 via-marigold-400 to-kumkum-500" />
 
       {/* Faint Indian block-print circles */}
-      <div className="absolute right-[-60px] top-10 w-64 h-64 rounded-full border-[40px] border-marigold-400/8 pointer-events-none" />
+      <div className="hidden md:block absolute right-[-60px] top-10 w-64 h-64 rounded-full border-[40px] border-marigold-400/8 pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-14 gap-4">
