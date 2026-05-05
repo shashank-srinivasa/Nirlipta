@@ -62,16 +62,16 @@ export default function Hero({
 
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center text-center">
 
-        {/* Teacher name + studio name grouped so label sits above the N */}
-        <div className="inline-flex flex-col items-start">
+        {/* Teacher name + studio name */}
+        <div className="flex flex-col items-center">
           <p
-            className="text-[9px] md:text-xs font-bold tracking-[0.12em] md:tracking-[0.22em] uppercase text-white/40 select-none leading-none"
+            className="text-[9px] md:text-xs font-bold tracking-[0.12em] md:tracking-[0.22em] uppercase text-white/40 select-none leading-none mb-2"
             style={fadeIn(0)}
           >
             {teacher}&rsquo;s
           </p>
           <h1
-            className="font-display font-bold leading-none tracking-[-0.04em] select-none"
+            className="font-display font-bold leading-none tracking-[-0.04em] select-none text-center"
             style={{ fontSize: 'clamp(2.8rem, 16vw, 18vw)' }}
             aria-label={studioName}
           >
