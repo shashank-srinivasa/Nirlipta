@@ -48,7 +48,12 @@ export default function ClassCard({ yoga }: ClassCardProps) {
             <span className="flex items-center gap-1.5 text-xs text-white/30"><Clock size={11} /> {yoga.duration_minutes}m</span>
             <span className="flex items-center gap-1.5 text-xs text-white/30"><Users size={11} /> {yoga.max_students} max</span>
             {yoga.schedule_day && (
-              <span className="flex items-center gap-1.5 text-xs text-white/30"><Calendar size={11} /> {yoga.schedule_day}s · {yoga.schedule_time}</span>
+              <span className="flex items-center gap-1.5 text-xs text-white/30">
+                <Calendar size={11} />
+                {yoga.schedule_day.split(',').map(d => d.trim().slice(0, 3)).join(', ')}
+                {yoga.schedule_time ? ` · ${yoga.schedule_time}` : ''}
+                {yoga.recurrence && yoga.recurrence !== 'one-time' && ` · ${yoga.recurrence}`}
+              </span>
             )}
           </div>
 

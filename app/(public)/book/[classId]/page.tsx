@@ -62,7 +62,10 @@ export default async function BookingPage({ params }: Props) {
                 </div>
                 {yoga.schedule_day && (
                   <div className="flex items-center gap-2 text-sm text-white/40">
-                    <Calendar size={13} className="text-marigold-400/50" /> {yoga.schedule_day}s · {formatTime(yoga.schedule_time)}
+                    <Calendar size={13} className="text-marigold-400/50" />
+                    {yoga.schedule_day?.split(',').map(d => d.trim()).join(', ')}
+                    {yoga.schedule_time ? ` · ${formatTime(yoga.schedule_time)}` : ''}
+                    {yoga.recurrence && yoga.recurrence !== 'one-time' && ` · ${yoga.recurrence}`}
                   </div>
                 )}
               </div>

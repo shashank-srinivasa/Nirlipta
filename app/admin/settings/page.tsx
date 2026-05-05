@@ -286,7 +286,7 @@ export default function AdminSettingsPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form),
     })
-    if (!res.ok) { toast.error('Failed to save'); setSaving(false); return }
+    if (!res.ok) { const e = await res.json().catch(() => ({})); toast.error(e.error || 'Failed to save settings'); setSaving(false); return }
     toast.success('Settings saved!')
     setSaving(false)
   }

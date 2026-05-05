@@ -31,7 +31,7 @@ export default function AdminTestimonialsPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: t.id, is_active: true }),
     })
-    if (!res.ok) toast.error('Failed')
+    if (!res.ok) { const e = await res.json().catch(() => ({})); toast.error(e.error || 'Failed to approve review') }
     else { setTestimonials(prev => prev.map(x => x.id === t.id ? { ...x, is_active: true } : x)); toast.success('Approved — now showing on site') }
     setSaving(null)
   }
@@ -43,7 +43,7 @@ export default function AdminTestimonialsPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: t.id, is_active: false }),
     })
-    if (!res.ok) toast.error('Failed')
+    if (!res.ok) { const e = await res.json().catch(() => ({})); toast.error(e.error || 'Failed to hide review') }
     else { setTestimonials(prev => prev.map(x => x.id === t.id ? { ...x, is_active: false } : x)); toast.success('Hidden from site') }
     setSaving(null)
   }
@@ -56,7 +56,7 @@ export default function AdminTestimonialsPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id }),
     })
-    if (!res.ok) toast.error('Failed')
+    if (!res.ok) { const e = await res.json().catch(() => ({})); toast.error(e.error || 'Failed to delete review') }
     else { setTestimonials(prev => prev.filter(x => x.id !== id)); toast.success('Deleted') }
     setSaving(null)
   }

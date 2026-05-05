@@ -61,7 +61,7 @@ export default function AdminGalleryPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: img.id, storage_path: storagePath }),
     })
-    if (!res.ok) { toast.error('Failed to delete'); return }
+    if (!res.ok) { const e = await res.json().catch(() => ({})); toast.error(e.error || 'Failed to delete image'); return }
     toast.success('Deleted')
     load()
   }

@@ -9,6 +9,7 @@ export interface Class {
   max_students: number
   schedule_day: string | null
   schedule_time: string | null
+  recurrence: 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'one-time' | null
   image_url: string | null
   is_active: boolean
   category: string

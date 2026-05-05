@@ -49,7 +49,7 @@ export default function AdminBookingsPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...form, amount_paid: Number(form.amount_paid) }),
     })
-    if (!res.ok) { toast.error('Failed to add booking'); setSaving(false); return }
+    if (!res.ok) { const e = await res.json().catch(() => ({})); toast.error(e.error || 'Failed to add booking'); setSaving(false); return }
     toast.success('Booking added')
     setModal(false)
     setForm(EMPTY_BOOKING)
@@ -63,7 +63,7 @@ export default function AdminBookingsPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, status }),
     })
-    if (!res.ok) { toast.error('Failed to update'); return }
+    if (!res.ok) { const e = await res.json().catch(() => ({})); toast.error(e.error || 'Failed to update status'); return }
     setBookings(prev => prev.map(b => b.id === id ? { ...b, status } : b))
   }
 

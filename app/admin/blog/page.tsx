@@ -75,7 +75,7 @@ export default function AdminBlogPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: editing.id, ...payload }),
       })
-      if (!res.ok) { toast.error('Failed to update'); setSaving(false); return }
+      if (!res.ok) { const e = await res.json().catch(() => ({})); toast.error(e.error || 'Failed to update post'); setSaving(false); return }
       toast.success('Post updated')
     } else {
       const res = await adminFetch('/api/admin/blog', {
@@ -99,7 +99,7 @@ export default function AdminBlogPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id }),
     })
-    if (!res.ok) { toast.error('Failed to delete'); return }
+    if (!res.ok) { const e = await res.json().catch(() => ({})); toast.error(e.error || 'Failed to delete post'); return }
     toast.success('Deleted'); load()
   }
 
@@ -113,7 +113,7 @@ export default function AdminBlogPage() {
         published_at: !p.is_published ? new Date().toISOString() : null,
       }),
     })
-    if (!res.ok) { toast.error('Failed'); return }
+    if (!res.ok) { const e = await res.json().catch(() => ({})); toast.error(e.error || 'Failed to update post'); return }
     toast.success(p.is_published ? 'Unpublished' : 'Published')
     load()
   }

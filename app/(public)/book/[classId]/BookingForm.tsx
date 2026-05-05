@@ -16,27 +16,27 @@ const DAY_MAP: Record<string, number> = {
   thursday: 4, friday: 5, saturday: 6,
 }
 
-function getValidDates(scheduleDay: string | null): string {
-  if (!scheduleDay) return ''
-  const dayIndex = DAY_MAP[scheduleDay.toLowerCase()]
-  if (dayIndex === undefined) return ''
+function getDayIndices(scheduleDay: string | null): number[] {
+  if (!scheduleDay) return []
+  return scheduleDay.split(',').map(d => DAY_MAP[d.trim().toLowerCase()]).filter(i => i !== undefined) as number[]
+}
 
+function getValidDates(scheduleDay: string | null): string {
+  const indices = getDayIndices(scheduleDay)
+  if (!indices.length) return ''
   const today = new Date()
-  const result: string[] = []
   for (let i = 1; i <= 60; i++) {
     const d = new Date(today)
     d.setDate(today.getDate() + i)
-    if (d.getDay() === dayIndex) result.push(d.toISOString().split('T')[0])
-    if (result.length >= 8) break
+    if (indices.includes(d.getDay())) return d.toISOString().split('T')[0]
   }
-  return result[0] // earliest valid date as min
+  return ''
 }
 
 function isValidDate(dateStr: string, scheduleDay: string | null): boolean {
-  if (!scheduleDay) return true
-  const dayIndex = DAY_MAP[scheduleDay.toLowerCase()]
-  if (dayIndex === undefined) return true
-  return new Date(dateStr + 'T00:00:00').getDay() === dayIndex
+  const indices = getDayIndices(scheduleDay)
+  if (!indices.length) return true
+  return indices.includes(new Date(dateStr + 'T00:00:00').getDay())
 }
 
 interface Props {
@@ -62,14 +62,14 @@ export default function BookingForm({
 
   const minDate = getValidDates(yoga.schedule_day)
   const scheduleHint = yoga.schedule_day
-    ? `This class runs on ${yoga.schedule_day}s${yoga.schedule_time ? ` at ${formatTime(yoga.schedule_time)}` : ''}`
+    ? `This class runs on ${yoga.schedule_day.split(',').map(d => d.trim() + 's').join(', ')}${yoga.schedule_time ? ` at ${formatTime(yoga.schedule_time)}` : ''}${yoga.recurrence && yoga.recurrence !== 'one-time' ? ` (${yoga.recurrence})` : ''}`
     : null
 
   const validate = () => {
     const e: Partial<typeof form> = {}
     if (!form.booking_date) e.booking_date = 'Pick a date'
     else if (!isValidDate(form.booking_date, yoga.schedule_day))
-      e.booking_date = `This class runs on ${yoga.schedule_day}s only`
+      e.booking_date = `This class runs on ${yoga.schedule_day?.split(',').map(d => d.trim()).join(', ')} only`
     if (!form.student_name.trim()) e.student_name = 'Enter your name'
     if (!form.student_email.trim() || !/\S+@\S+\.\S+/.test(form.student_email))
       e.student_email = 'Enter a valid email'

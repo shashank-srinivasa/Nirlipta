@@ -10,17 +10,28 @@ import toast from 'react-hot-toast'
 
 type ClassFormLevel = 'Beginner' | 'Intermediate' | 'Advanced' | 'All Levels'
 
+type Recurrence = 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'one-time'
+
 type ClassForm = {
   title: string; description: string; instructor: string; duration_minutes: number;
-  level: ClassFormLevel; price: number; max_students: number; schedule_day: string;
-  schedule_time: string; category: string; is_active: boolean; image_url: string;
+  level: ClassFormLevel; price: number; max_students: number; schedule_days: string[];
+  schedule_time: string; recurrence: Recurrence; category: string; is_active: boolean; image_url: string;
 }
 
 const EMPTY_CLASS: ClassForm = {
-  title: '', description: '', instructor: 'Priya', duration_minutes: 60,
+  title: '', description: '', instructor: '', duration_minutes: 60,
   level: 'All Levels', price: 500, max_students: 10,
-  schedule_day: '', schedule_time: '', category: 'Hatha', is_active: true, image_url: '',
+  schedule_days: [], schedule_time: '', recurrence: 'weekly', category: 'Hatha', is_active: true, image_url: '',
 }
+
+const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
+const RECURRENCE_OPTIONS: { value: Recurrence; label: string }[] = [
+  { value: 'daily',    label: 'Daily' },
+  { value: 'weekly',   label: 'Weekly' },
+  { value: 'biweekly', label: 'Every 2 weeks' },
+  { value: 'monthly',  label: 'Monthly' },
+  { value: 'one-time', label: 'One-time' },
+]
 
 export default function AdminClassesPage() {
   const [classes, setClasses] = useState<Class[]>([])
@@ -42,21 +53,44 @@ export default function AdminClassesPage() {
     setForm({
       title: c.title, description: c.description || '', instructor: c.instructor,
       duration_minutes: c.duration_minutes, level: c.level as ClassFormLevel, price: c.price / 100,
-      max_students: c.max_students, schedule_day: c.schedule_day || '',
-      schedule_time: c.schedule_time || '', category: c.category,
+      max_students: c.max_students,
+      schedule_days: c.schedule_day ? c.schedule_day.split(',').map(d => d.trim()) : [],
+      schedule_time: c.schedule_time || '',
+      recurrence: (c.recurrence as Recurrence) || 'weekly',
+      category: c.category,
       is_active: c.is_active, image_url: c.image_url || '',
     })
     setModal(true)
   }
 
+  const toggleDay = (day: string) => {
+    setForm(p => ({
+      ...p,
+      schedule_days: p.schedule_days.includes(day)
+        ? p.schedule_days.filter(d => d !== day)
+        : [...p.schedule_days, day],
+    }))
+  }
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
-    const payload = { ...form, price: Math.round(Number(form.price) * 100), duration_minutes: Number(form.duration_minutes), max_students: Number(form.max_students) }
+    const payload = {
+      ...form,
+      schedule_day: form.schedule_days.join(',') || null,
+      schedule_days: undefined,
+      price: Math.round(Number(form.price) * 100),
+      duration_minutes: Number(form.duration_minutes),
+      max_students: Number(form.max_students),
+    }
     const res = editing
       ? await adminFetch('/api/admin/classes', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: editing.id, ...payload }) })
       : await adminFetch('/api/admin/classes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-    if (!res.ok) { toast.error(editing ? 'Failed to update' : 'Failed to create'); setSaving(false); return }
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      toast.error(err.error || (editing ? 'Failed to update class' : 'Failed to create class'))
+      setSaving(false); return
+    }
     toast.success(editing ? 'Class updated' : 'Class created')
     setModal(false); setSaving(false); load()
   }
@@ -64,7 +98,11 @@ export default function AdminClassesPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this class? This will also delete all bookings.')) return
     const res = await adminFetch('/api/admin/classes', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
-    if (!res.ok) { toast.error('Failed to delete'); return }
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      toast.error(err.error || 'Failed to delete class')
+      return
+    }
     toast.success('Deleted'); load()
   }
 
@@ -98,7 +136,12 @@ export default function AdminClassesPage() {
                   <td className="px-6 py-4 text-gray-500">{c.category}</td>
                   <td className="px-6 py-4 text-gray-500">{c.level}</td>
                   <td className="px-6 py-4 text-gray-900">{formatPrice(c.price)}</td>
-                  <td className="px-6 py-4 text-gray-500">{c.schedule_day} {c.schedule_time}</td>
+                  <td className="px-6 py-4 text-gray-500 text-xs">
+                    {c.schedule_day || '—'}{c.schedule_time ? ` · ${c.schedule_time}` : ''}
+                    {c.recurrence && c.recurrence !== 'one-time' && (
+                      <span className="ml-1.5 text-[10px] bg-sage-50 text-sage-700 px-1.5 py-0.5 rounded-full capitalize">{c.recurrence}</span>
+                    )}
+                  </td>
                   <td className="px-6 py-4">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${c.is_active ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-500'}`}>
                       {c.is_active ? 'Active' : 'Hidden'}
@@ -141,19 +184,33 @@ export default function AdminClassesPage() {
                     />
                   </div>
                 ))}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Days</label>
+                  <div className="flex flex-wrap gap-2">
+                    {DAYS.map(day => (
+                      <button key={day} type="button" onClick={() => toggleDay(day)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                          form.schedule_days.includes(day)
+                            ? 'bg-sage-600 text-white border-sage-600'
+                            : 'bg-white text-gray-600 border-gray-200 hover:border-sage-400'
+                        }`}>
+                        {day.slice(0, 3)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Schedule Day</label>
-                    <select value={form.schedule_day} onChange={(e) => setForm((p) => ({ ...p, schedule_day: e.target.value }))}
-                      className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sage-400">
-                      <option value="">— pick a day —</option>
-                      {['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].map(d => <option key={d}>{d}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Schedule Time</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
                     <input type="time" value={form.schedule_time} onChange={(e) => setForm((p) => ({ ...p, schedule_time: e.target.value }))}
                       className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sage-400" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Recurrence</label>
+                    <select value={form.recurrence} onChange={(e) => setForm((p) => ({ ...p, recurrence: e.target.value as Recurrence }))}
+                      className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sage-400">
+                      {RECURRENCE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
                   </div>
                 </div>
                 <div>
