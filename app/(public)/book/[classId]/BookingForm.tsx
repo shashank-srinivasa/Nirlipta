@@ -21,6 +21,13 @@ function getDayIndices(scheduleDay: string | null): number[] {
   return scheduleDay.split(',').map(d => DAY_MAP[d.trim().toLowerCase()]).filter(i => i !== undefined) as number[]
 }
 
+function toLocalDateStr(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
 function getValidDates(scheduleDay: string | null): string {
   const indices = getDayIndices(scheduleDay)
   if (!indices.length) return ''
@@ -28,7 +35,7 @@ function getValidDates(scheduleDay: string | null): string {
   for (let i = 1; i <= 60; i++) {
     const d = new Date(today)
     d.setDate(today.getDate() + i)
-    if (indices.includes(d.getDay())) return d.toISOString().split('T')[0]
+    if (indices.includes(d.getDay())) return toLocalDateStr(d)
   }
   return ''
 }
@@ -56,6 +63,7 @@ export default function BookingForm({
 }: Props) {
   const router = useRouter()
   const teacherFirst = teacherName.split(' ')[0]
+  const whatsappClean = whatsapp.replace(/\D/g, '')
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({ booking_date: '', student_name: '', student_email: '', student_phone: '' })
   const [errors, setErrors] = useState<Partial<typeof form>>({})
@@ -99,7 +107,7 @@ export default function BookingForm({
       `Email: ${form.student_email}`,
       `Phone: ${form.student_phone}`,
     ].join('\n')
-    window.open(`https://wa.me/${whatsapp}?text=${encodeURIComponent(lines)}`, '_blank', 'noopener,noreferrer')
+    window.open(`https://wa.me/${whatsappClean}?text=${encodeURIComponent(lines)}`, '_blank', 'noopener,noreferrer')
     router.push('/booking-sent')
   }
 
@@ -216,7 +224,7 @@ export default function BookingForm({
 
         <div className="pt-2 border-t border-white/6 text-center">
           <a
-            href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(`Hi ${teacherFirst}, I have a question about ${yoga.title}.`)}`}
+            href={`https://wa.me/${whatsappClean}?text=${encodeURIComponent(`Hi ${teacherFirst}, I have a question about ${yoga.title}.`)}`}
             target="_blank" rel="noopener noreferrer"
             className="text-xs text-white/30 hover:text-marigold-300 transition-colors"
           >
