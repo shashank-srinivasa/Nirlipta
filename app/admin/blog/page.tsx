@@ -181,6 +181,7 @@ export default function AdminBlogPage() {
                   <div className="flex items-center gap-3">
                     {form.cover_image_url ? (
                       <div className="relative w-24 h-16 rounded-lg overflow-hidden border border-gray-200 shrink-0">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={form.cover_image_url} alt="Cover" className="w-full h-full object-cover" />
                       </div>
                     ) : (

@@ -241,7 +241,7 @@ export default function AdminTestimonialsPage() {
         )}
 
         <p className="text-xs text-gray-400 mt-6">
-          Tip: Use the <Eye size={11} className="inline" /> icon to show/hide. The testimonials section won't appear on the site if all are hidden.
+          Tip: Use the <Eye size={11} className="inline" /> icon to show/hide. The testimonials section won&apos;t appear on the site if all are hidden.
         </p>
       </div>
     </div>

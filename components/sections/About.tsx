@@ -52,6 +52,7 @@ export default function About({
             <div className="aspect-[4/5] relative rounded-3xl overflow-hidden bg-parchment-200">
               {teacherPhotoUrl ? (
                 <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={teacherPhotoUrl} alt={name} className="object-cover w-full h-full" />
                   <div className="absolute inset-0 bg-gradient-to-t from-ink/20 to-transparent" />
                 </>

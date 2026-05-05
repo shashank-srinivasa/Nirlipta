@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import AdminSidebar from '../AdminSidebar'
 import { createServiceClient } from '@/lib/supabase/server'
 import { Mail, Phone, Clock } from 'lucide-react'

@@ -26,7 +26,7 @@ export default async function Testimonials() {
           {testimonials.map(t => (
             <div key={t.id} className={`rounded-2xl p-8 flex flex-col justify-between ${t.bg_color}`}>
               <div>
-                <span className="font-display text-5xl leading-none block mb-2 text-parchment-200 opacity-30">"</span>
+                <span className="font-display text-5xl leading-none block mb-2 text-parchment-200 opacity-30">&ldquo;</span>
                 <blockquote className="leading-[1.7] text-[0.92rem] mb-8 text-parchment-200">
                   {t.text}
                 </blockquote>

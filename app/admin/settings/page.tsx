@@ -93,6 +93,7 @@ function PhotoPicker({ value, onChange }: { value: string, onChange: (v: string)
     <>
       <div className="flex items-center gap-4">
         {value && (
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={value} alt="Teacher photo" className="w-16 h-20 rounded-xl object-cover border border-gray-200" />
         )}
         <label className={`cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-700 hover:bg-gray-50 transition-colors`}>
@@ -112,6 +113,7 @@ function PhotoPicker({ value, onChange }: { value: string, onChange: (v: string)
             <p className="text-xs text-gray-400">Drag to adjust. Best results with a portrait shot.</p>
             <div className="max-h-[60vh] overflow-auto flex justify-center">
               <ReactCrop crop={crop} onChange={c => setCrop(c)} onComplete={c => setCompletedCrop(c)} aspect={4 / 5}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img ref={imgRef} src={src} onLoad={onImageLoad} className="max-w-full" alt="crop" />
               </ReactCrop>
             </div>
@@ -306,7 +308,7 @@ export default function AdminSettingsPage() {
             <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
               <h2 className="font-semibold text-gray-900">Booking Method</h2>
               <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
-                Choose how students confirm their booking. Switch to Razorpay when you're ready to accept online payments.
+                Choose how students confirm their booking. Switch to Razorpay when you&apos;re ready to accept online payments.
               </p>
             </div>
             <div className="px-6 py-5">

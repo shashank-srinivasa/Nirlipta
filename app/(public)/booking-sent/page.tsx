@@ -17,7 +17,7 @@ export default function BookingSentPage() {
         </p>
 
         <p className="text-sm text-ink/35 mb-8">
-          Didn't open WhatsApp? Check that pop-ups are allowed, or message directly from the app.
+          Didn&apos;t open WhatsApp? Check that pop-ups are allowed, or message directly from the app.
         </p>
 
         <Link href="/classes" className="btn-marigold inline-block">
