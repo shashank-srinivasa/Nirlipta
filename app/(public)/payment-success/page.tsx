@@ -24,9 +24,9 @@ export default async function PaymentSuccessPage({ searchParams }: Props) {
           <CheckCircle size={40} className="text-forest-700" />
         </div>
 
-        <h1 className="text-2xl font-display font-semibold text-ink mb-2">Booking Confirmed</h1>
+        <h1 className="text-2xl font-display font-semibold text-ink mb-2">Payment Received</h1>
         <p className="text-ink/50 mb-8">
-          Your spot has been reserved. We look forward to seeing you on the mat.
+          Your payment was successful. The studio will confirm your booking shortly and send you a confirmation email.
         </p>
 
         {booking && (

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { createServiceClient } from '@/lib/supabase/server'
-import { sendBookingNotification } from '@/lib/email'
 
 export async function POST(req: NextRequest) {
   const rawBody = await req.text()
@@ -76,7 +75,7 @@ export async function POST(req: NextRequest) {
       notes: notes || null,
       payment_id: payment.id,
       razorpay_order_id: order.id,
-      status: 'confirmed',
+      status: 'pending',
     })
     .select('id')
     .single()
@@ -85,27 +84,6 @@ export async function POST(req: NextRequest) {
     if (error.code === '23505') return NextResponse.json({ ok: true }) // duplicate, already inserted
     console.error('[WEBHOOK] Insert error:', error)
     return NextResponse.json({ error: 'Insert failed' }, { status: 500 })
-  }
-
-  const { data: settings } = await supabase
-    .from('studio_settings')
-    .select('email, teacher_name, studio_name')
-    .single()
-
-  const teacherEmail = settings?.email || process.env.ADMIN_EMAIL || ''
-  if (teacherEmail) {
-    sendBookingNotification({
-      studentName: student_name || '',
-      studentEmail: student_email || '',
-      studentPhone: student_phone || '',
-      classTitle: yoga?.title || 'Yoga class',
-      bookingDate: booking_date,
-      amountPaid: payment.amount,
-      paymentId: payment.id,
-      teacherEmail,
-      teacherName: settings?.teacher_name || 'Ashwini',
-      studioName: settings?.studio_name || 'Nirlipta',
-    })
   }
 
   console.log('[WEBHOOK] Booking created via webhook:', booking.id)
