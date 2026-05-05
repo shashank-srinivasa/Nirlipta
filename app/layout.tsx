@@ -7,7 +7,7 @@ export const metadata: Metadata = {
     default: 'Nirlipta by Ashwini — Yoga, Bengaluru',
     template: '%s | Nirlipta by Ashwini',
   },
-  description: 'Nirlipta by Ashwini Karmbadka. Hatha & Vinyasa. Bengaluru and Puttur.',
+  description: 'Nirlipta by Ashwini Karmbadka. Hatha, Vinyasa & Pranayama for all levels. Bengaluru.',
   manifest: '/manifest.webmanifest',
   appleWebApp: {
     capable: true,

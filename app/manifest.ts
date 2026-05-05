@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Nirlipta by Ashwini',
     short_name: 'Nirlipta',
-    description: 'Book yoga classes with Ashwini Karmbadka. Hatha, Vinyasa & more in Bengaluru.',
+    description: 'Hatha, Vinyasa & Pranayama with Ashwini Karmbadka. All levels. Bengaluru.',
     start_url: '/',
     display: 'standalone',
     background_color: '#1C1408',

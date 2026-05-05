@@ -10,7 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const { data } = await supabase.from('studio_settings').select('studio_name, tagline, teacher_name').single()
   const name = data?.studio_name || 'Nirlipta'
   const teacher = data?.teacher_name || 'Ashwini Karmbadka'
-  const tagline = data?.tagline || 'Hatha & Vinyasa yoga in Bengaluru'
+  const tagline = data?.tagline || 'Hatha, Vinyasa & Pranayama — all levels welcome'
   return {
     title: `${name} by ${teacher.split(' ')[0]} — Yoga, Bengaluru`,
     description: tagline,
