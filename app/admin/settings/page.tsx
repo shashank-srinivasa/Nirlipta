@@ -92,10 +92,8 @@ function PhotoPicker({ value, onChange }: { value: string, onChange: (v: string)
   return (
     <>
       <div className="flex items-center gap-4">
-        {value && (
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={value} alt="Teacher photo" className="w-16 h-20 rounded-xl object-cover border border-gray-200" />
-        )}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        {value && <img src={value} alt="Teacher photo" className="w-16 h-20 rounded-xl object-cover border border-gray-200" />}
         <label className={`cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-700 hover:bg-gray-50 transition-colors`}>
           <Upload size={14} />
           {value ? 'Change photo' : 'Choose photo'}

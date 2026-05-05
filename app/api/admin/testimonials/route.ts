@@ -11,16 +11,7 @@ function auth(req: NextRequest) {
 export async function GET(req: NextRequest) {
   if (!auth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const supabase = createServiceClient()
-  const { data, error } = await supabase.from('testimonials').select('*').order('sort_order')
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data)
-}
-
-export async function POST(req: NextRequest) {
-  if (!auth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const body = await req.json()
-  const supabase = createServiceClient()
-  const { data, error } = await supabase.from('testimonials').insert(body).select().single()
+  const { data, error } = await supabase.from('testimonials').select('*').order('created_at', { ascending: false })
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json(data)
 }
@@ -32,6 +23,7 @@ export async function PUT(req: NextRequest) {
   const { error } = await supabase.from('testimonials').update(body).eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   revalidatePath('/')
+  revalidatePath('/about')
   return NextResponse.json({ ok: true })
 }
 
@@ -42,5 +34,6 @@ export async function DELETE(req: NextRequest) {
   const { error } = await supabase.from('testimonials').delete().eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   revalidatePath('/')
+  revalidatePath('/about')
   return NextResponse.json({ ok: true })
 }
