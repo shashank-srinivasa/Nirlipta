@@ -123,9 +123,9 @@ export default function BookPage() {
               return (
                 <Link key={yoga.id} href={`/book/${yoga.id}?date=${date}`} className="group block">
                   <div className="bg-white border border-parchment-300 rounded-2xl p-5 hover:border-marigold-400 hover:shadow-md transition-all duration-200">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-2">
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider ${catClass}`}>
                             {yoga.category}
                           </span>
@@ -135,19 +135,19 @@ export default function BookPage() {
                             </span>
                           )}
                         </div>
-                        <h3 className="text-base font-semibold text-ink mb-1 leading-snug group-hover:text-marigold-500 transition-colors">
-                          {yoga.title}
-                        </h3>
-                        {yoga.description && (
-                          <p className="text-xs text-ink/45 line-clamp-1 mb-2">{yoga.description}</p>
-                        )}
+                        <span className="text-lg font-display font-semibold text-ink shrink-0">{formatPrice(yoga.price)}</span>
+                      </div>
+                      <h3 className="text-base font-semibold text-ink leading-snug group-hover:text-marigold-500 transition-colors">
+                        {yoga.title}
+                      </h3>
+                      {yoga.description && (
+                        <p className="text-xs text-ink/45 line-clamp-2">{yoga.description}</p>
+                      )}
+                      <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3 text-xs text-ink/40">
                           <span className="flex items-center gap-1"><Clock size={10} /> {yoga.duration_minutes} min</span>
                           <span className="flex items-center gap-1"><Users size={10} /> {yoga.max_students} spots</span>
                         </div>
-                      </div>
-                      <div className="flex flex-col items-end gap-3 shrink-0">
-                        <span className="text-xl font-display font-semibold text-ink">{formatPrice(yoga.price)}</span>
                         <span className="flex items-center gap-1.5 text-xs bg-ink text-parchment-100 group-hover:bg-marigold-400 group-hover:text-ink px-3 py-1.5 rounded-full font-medium transition-colors whitespace-nowrap">
                           Book <ArrowRight size={11} />
                         </span>

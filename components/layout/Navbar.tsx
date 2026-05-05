@@ -75,7 +75,7 @@ export default function Navbar({ studioName = 'Nirlipta' }: { studioName?: strin
           </Link>
         </div>
 
-        <button className={cn('md:hidden p-2 transition-colors', dark ? 'text-white/50' : 'text-ink/60')} onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu" aria-expanded={menuOpen}>
+        <button className={cn('md:hidden p-3 -mr-1 transition-colors', dark ? 'text-white/50' : 'text-ink/60')} onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu" aria-expanded={menuOpen}>
           {menuOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       </nav>
@@ -84,7 +84,7 @@ export default function Navbar({ studioName = 'Nirlipta' }: { studioName?: strin
         <div className="md:hidden bg-parchment-100/95 backdrop-blur-xl border-t border-parchment-300 px-6 py-5 space-y-4">
           {navLinks.map(link => (
             <Link key={link.href} href={link.href}
-              className={cn('block text-sm font-medium py-1.5 transition-colors', pathname === link.href ? 'text-terracotta-400' : 'text-ink/60')}>
+              className={cn('block text-base font-medium py-3 border-b border-parchment-200 transition-colors', pathname === link.href ? 'text-terracotta-400' : 'text-ink/70')}>
               {link.label}
             </Link>
           ))}

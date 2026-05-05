@@ -39,7 +39,7 @@ export default function About({
   ].filter(Boolean) as { value: string; label: string }[]
 
   return (
-    <section className="py-28 section-parchment relative overflow-hidden">
+    <section className="py-16 md:py-28 section-parchment relative overflow-hidden">
       <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-forest-700 via-marigold-400 to-kumkum-500" />
 
       <div className="max-w-7xl mx-auto px-6 md:px-12">
@@ -49,7 +49,7 @@ export default function About({
             <div className="absolute -top-4 -left-4 w-full h-full rounded-3xl border border-marigold-400/25 pointer-events-none" />
             <div className="absolute -bottom-4 -right-4 w-32 h-32 rounded-full border-2 border-kumkum-400/15 pointer-events-none" />
 
-            <div className="aspect-[4/5] relative rounded-3xl overflow-hidden bg-parchment-200">
+            <div className="aspect-[4/3] sm:aspect-[4/5] relative rounded-3xl overflow-hidden bg-parchment-200">
               {teacherPhotoUrl ? (
                 <>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -66,7 +66,7 @@ export default function About({
 
           <div>
             <p className="text-terracotta-400 text-xs font-medium tracking-[0.2em] uppercase mb-4">The teacher</p>
-            <h2 className="text-4xl md:text-5xl font-display font-semibold text-ink tracking-tight mb-8 leading-tight">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-semibold text-ink tracking-tight mb-8 leading-tight">
               {heading}<br />
               <span className="italic font-normal text-ink/60">{headingSub}</span>
             </h2>
@@ -82,7 +82,7 @@ export default function About({
             )}
 
             {stats.length > 0 && (
-              <div className={`mt-10 grid gap-6 border-t border-parchment-300 pt-10`} style={{ gridTemplateColumns: `repeat(${Math.min(stats.length, 3)}, 1fr)` }}>
+              <div className="mt-10 grid grid-cols-2 md:grid-cols-3 gap-6 border-t border-parchment-300 pt-10">
                 {stats.map(s => (
                   <div key={s.label}>
                     <p className="text-xl font-display font-semibold text-terracotta-400 leading-snug">{s.value}</p>

@@ -6,7 +6,7 @@ interface FeaturedClassesProps { classes: Class[] }
 
 export default function FeaturedClasses({ classes }: FeaturedClassesProps) {
   return (
-    <section className="py-28 section-parchment relative overflow-hidden">
+    <section className="py-16 md:py-28 section-parchment relative overflow-hidden">
       <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-forest-700 via-marigold-400 to-kumkum-500" />
 
       {/* Faint Indian block-print circles */}
@@ -16,7 +16,7 @@ export default function FeaturedClasses({ classes }: FeaturedClassesProps) {
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-14 gap-4">
           <div>
             <p className="text-terracotta-400 text-xs font-medium tracking-[0.2em] uppercase mb-3">The schedule</p>
-            <h2 className="text-4xl md:text-5xl font-display font-semibold text-ink tracking-tight leading-tight">
+            <h2 className="text-3xl md:text-5xl font-display font-semibold text-ink tracking-tight leading-tight">
               Classes with<br />
               <span className="italic font-normal">Nirlipta.</span>
             </h2>

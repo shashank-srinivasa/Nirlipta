@@ -26,10 +26,10 @@ export default async function ClassesPage() {
         <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-kumkum-500 via-marigold-400 to-forest-700" />
         <div className="max-w-7xl mx-auto">
           <p className="text-terracotta-400 text-xs font-medium tracking-[0.2em] uppercase mb-4">The schedule</p>
-          <h1 className="text-5xl md:text-6xl font-display font-semibold text-ink tracking-tight mb-5 leading-tight">
+          <h1 className="text-4xl md:text-6xl font-display font-semibold text-ink tracking-tight mb-5 leading-tight">
             All classes.
           </h1>
-          <p className="text-xl text-ink/50 max-w-xl leading-relaxed">{subtitle}</p>
+          <p className="text-lg md:text-xl text-ink/50 max-w-xl leading-relaxed">{subtitle}</p>
         </div>
       </div>
 

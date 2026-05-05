@@ -68,7 +68,7 @@ export default function ContactForm() {
   }
 
   return (
-    <div className="card-base p-8">
+    <div className="card-base p-5 sm:p-8">
       <h2 className="text-xl font-display font-semibold text-ink mb-6">Send a message</h2>
       <form onSubmit={handleSubmit} noValidate className="space-y-5">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">

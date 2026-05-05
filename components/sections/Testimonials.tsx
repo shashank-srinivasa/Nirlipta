@@ -11,20 +11,20 @@ export default async function Testimonials() {
   if (!testimonials || testimonials.length === 0) return null
 
   return (
-    <section className="py-28 section-parchment relative overflow-hidden">
+    <section className="py-16 md:py-28 section-parchment relative overflow-hidden">
       <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-kumkum-500 via-marigold-400 to-forest-700" />
 
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         <div className="mb-14">
           <p className="text-terracotta-400 text-xs font-medium tracking-[0.2em] uppercase mb-3">From students</p>
-          <h2 className="text-4xl md:text-5xl font-display font-semibold text-ink tracking-tight leading-tight">
+          <h2 className="text-3xl md:text-5xl font-display font-semibold text-ink tracking-tight leading-tight">
             In their words.
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
           {testimonials.map(t => (
-            <div key={t.id} className={`rounded-2xl p-8 flex flex-col justify-between ${t.bg_color}`}>
+            <div key={t.id} className={`rounded-2xl p-6 md:p-8 flex flex-col justify-between ${t.bg_color}`}>
               <div>
                 <span className="font-display text-5xl leading-none block mb-2 text-parchment-200 opacity-30">&ldquo;</span>
                 <blockquote className="leading-[1.7] text-[0.92rem] mb-8 text-parchment-200">

@@ -54,7 +54,7 @@ export default async function BookingPage({ params, searchParams }: Props) {
 
           {/* Left — class summary card */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl border border-parchment-300 shadow-sm p-6 sticky top-28">
+            <div className="bg-white rounded-2xl border border-parchment-300 shadow-sm p-6 lg:sticky lg:top-24">
               <div className="flex items-center gap-2 mb-4">
                 <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider ${catClass}`}>
                   {yoga.category}

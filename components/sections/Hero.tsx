@@ -48,7 +48,7 @@ export default function Hero({ studioName = 'Nirlipta', tagline }: { studioName?
       <div className="relative z-10 flex-1 flex flex-col justify-center">
         <h1
           className="w-full font-display font-bold leading-none tracking-[-0.04em] select-none"
-          style={{ fontSize: 'clamp(3.5rem, 18.5vw, 18vw)' }}
+          style={{ fontSize: 'clamp(2.8rem, 16vw, 18vw)' }}
           aria-label={studioName}
         >
           {CHARS.map((ch, i) => (
@@ -74,13 +74,13 @@ export default function Hero({ studioName = 'Nirlipta', tagline }: { studioName?
           style={{ opacity: revealed ? 1 : 0, transition: 'opacity 1s ease', transitionDelay: '600ms' }}
         >
           {tagline ? (
-            <span className="text-white/50 text-xl md:text-2xl font-display font-medium tracking-tight text-center">
+            <span className="text-white/50 text-base md:text-2xl font-display font-medium tracking-tight text-center">
               {tagline}
             </span>
           ) : (
             ['Sthira', 'Sukha', 'Prana'].map((word, i) => (
               <span key={word} className="flex items-center gap-5">
-                <span className="text-white/50 text-2xl md:text-3xl font-display font-bold tracking-tight">{word}</span>
+                <span className="text-white/50 text-lg md:text-3xl font-display font-bold tracking-tight">{word}</span>
                 {i < 2 && <span className="text-white/20">·</span>}
               </span>
             ))

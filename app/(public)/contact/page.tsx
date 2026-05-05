@@ -23,7 +23,7 @@ export default async function ContactPage() {
         <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-kumkum-500 via-marigold-400 to-forest-700" />
         <div className="max-w-7xl mx-auto">
           <p className="text-terracotta-400 text-xs font-medium tracking-[0.2em] uppercase mb-4">Get in touch</p>
-          <h1 className="text-5xl md:text-6xl font-display font-semibold text-ink tracking-tight mb-5 leading-tight">Say hi.</h1>
+          <h1 className="text-4xl md:text-6xl font-display font-semibold text-ink tracking-tight mb-5 leading-tight">Say hi.</h1>
           <p className="text-xl text-ink/50 max-w-xl leading-relaxed">
             Questions about a class, unsure if yoga is for you, or just curious — {teacherFirst} reads every message and replies herself.
           </p>
@@ -31,7 +31,7 @@ export default async function ContactPage() {
       </div>
 
       <div className="section-parchment max-w-7xl mx-auto px-6 md:px-12 py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
           <div className="lg:col-span-2 space-y-6">
             {settings?.address && (
               <div className="flex gap-4">
@@ -78,7 +78,7 @@ export default async function ContactPage() {
                 href={`https://wa.me/${whatsapp}?text=Hi%2C%20I%27d%20like%20to%20know%20more%20about%20your%20yoga%20classes`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2.5 bg-ink text-parchment-100 px-6 py-3 rounded-full font-medium text-sm hover:bg-ink/80 transition-all active:scale-95"
+                className="inline-flex items-center gap-2.5 bg-ink text-parchment-100 px-6 py-3.5 rounded-full font-medium text-sm hover:bg-ink/80 transition-all active:scale-95"
               >
                 <MessageCircle size={16} /> Message on WhatsApp
               </a>
