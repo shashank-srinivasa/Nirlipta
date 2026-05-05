@@ -1,6 +1,8 @@
 import type { MetadataRoute } from 'next'
 import { createServiceClient } from '@/lib/supabase/server'
 
+export const dynamic = 'force-dynamic'
+
 const BASE = process.env.NEXT_PUBLIC_SITE_URL || 'https://nirlipta.duckdns.org'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
