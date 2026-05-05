@@ -64,10 +64,10 @@ export default function Hero({
 
         {/* Teacher name above title */}
         <p
-          className="mb-4 text-xs font-bold tracking-[0.22em] uppercase text-white/40 select-none"
+          className="mb-3 text-xs font-bold tracking-[0.22em] uppercase text-white/40 select-none"
           style={fadeIn(0)}
         >
-          {teacher}
+          {teacher}&rsquo;s
         </p>
 
         {/* Studio name */}
