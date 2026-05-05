@@ -65,7 +65,7 @@ export default function Hero({
         {/* Teacher name + studio name grouped so label sits above the N */}
         <div className="inline-flex flex-col items-start">
           <p
-            className="mb-1 text-xs font-bold tracking-[0.22em] uppercase text-white/40 select-none"
+            className="mb-0 text-xs font-bold tracking-[0.22em] uppercase text-white/40 select-none leading-none"
             style={fadeIn(0)}
           >
             {teacher}&rsquo;s

@@ -6,9 +6,9 @@ import { CheckCircle } from 'lucide-react'
 interface Props { searchParams: { booking?: string } }
 
 export default async function PaymentSuccessPage({ searchParams }: Props) {
+  const supabase = createServiceClient()
   let booking = null
   if (searchParams.booking) {
-    const supabase = createServiceClient()
     const { data } = await supabase
       .from('bookings')
       .select('*, classes(title)')
@@ -16,6 +16,8 @@ export default async function PaymentSuccessPage({ searchParams }: Props) {
       .single()
     booking = data
   }
+  const { data: settings } = await supabase.from('studio_settings').select('teacher_name').single()
+  const teacherFirst = settings?.teacher_name?.split(' ')[0] || 'Ashwini'
 
   return (
     <div className="min-h-screen bg-parchment-100 flex items-center justify-center px-6 py-20">
@@ -26,7 +28,7 @@ export default async function PaymentSuccessPage({ searchParams }: Props) {
 
         <h1 className="text-2xl font-display font-semibold text-ink mb-2">Payment Received</h1>
         <p className="text-ink/50 mb-8">
-          Your payment was successful. The studio will confirm your booking shortly and send you a confirmation email.
+          Your payment was successful. {teacherFirst} will confirm your booking shortly and send you a confirmation email.
         </p>
 
         {booking && (

@@ -50,10 +50,29 @@ export default async function BookingPage({ params, searchParams }: Props) {
           <ChevronLeft size={15} /> Back
         </Link>
 
+        {/* Mobile: compact class summary strip */}
+        <div className="lg:hidden bg-white rounded-2xl border border-parchment-300 shadow-sm p-4 mb-6">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider shrink-0 ${catClass}`}>
+                {yoga.category}
+              </span>
+              <h1 className="text-sm font-semibold text-ink truncate">{yoga.title}</h1>
+            </div>
+            <p className="text-base font-display font-bold text-ink shrink-0">{formatPrice(yoga.price)}</p>
+          </div>
+          <div className="flex items-center gap-3 mt-2 text-xs text-ink/40">
+            {yoga.duration_minutes && <span className="flex items-center gap-1"><Clock size={10} /> {yoga.duration_minutes}m</span>}
+            {yoga.schedule_day && yoga.schedule_time && (
+              <span className="flex items-center gap-1"><Calendar size={10} /> {yoga.schedule_day.split(',')[0].trim()} · {formatTime(yoga.schedule_time)}</span>
+            )}
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
 
-          {/* Left — class summary card */}
-          <div className="lg:col-span-2">
+          {/* Left — class summary card (desktop only) */}
+          <div className="hidden lg:block lg:col-span-2">
             <div className="bg-white rounded-2xl border border-parchment-300 shadow-sm p-6 lg:sticky lg:top-24">
               <div className="flex items-center gap-2 mb-4">
                 <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider ${catClass}`}>

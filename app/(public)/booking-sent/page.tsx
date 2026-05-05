@@ -1,9 +1,14 @@
 import Link from 'next/link'
 import { MessageCircle } from 'lucide-react'
+import { createClient } from '@/lib/supabase/server'
 
 export const metadata = { title: 'Request Sent' }
 
-export default function BookingSentPage() {
+export default async function BookingSentPage() {
+  const supabase = createClient()
+  const { data: settings } = await supabase.from('studio_settings').select('teacher_name').single()
+  const teacherFirst = settings?.teacher_name?.split(' ')[0] || 'Ashwini'
+
   return (
     <div className="min-h-screen bg-parchment-100 flex items-center justify-center px-6 py-20">
       <div className="bg-white rounded-3xl p-10 shadow-sm border border-parchment-300 max-w-md w-full text-center">
@@ -11,17 +16,13 @@ export default function BookingSentPage() {
           <MessageCircle size={40} className="text-green-500" />
         </div>
 
-        <h1 className="text-2xl font-display font-semibold text-ink mb-2">Message Sent</h1>
+        <h1 className="text-2xl font-display font-semibold text-ink mb-2">Request sent!</h1>
         <p className="text-ink/50 mb-8 leading-relaxed">
-          Your booking request has been sent via WhatsApp. Ashwini will confirm your spot shortly.
-        </p>
-
-        <p className="text-sm text-ink/35 mb-8">
-          Didn&apos;t open WhatsApp? Check that pop-ups are allowed, or message directly from the app.
+          Your booking request has been sent to {teacherFirst} on WhatsApp. She&apos;ll confirm your spot shortly.
         </p>
 
         <Link href="/classes" className="btn-marigold inline-block">
-          Explore More Classes
+          Explore more classes
         </Link>
       </div>
     </div>
