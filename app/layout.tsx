@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import Providers from './Providers'
 
@@ -7,7 +7,7 @@ export const metadata: Metadata = {
     default: 'Nirlipta by Ashwini — Yoga, Bengaluru',
     template: '%s | Nirlipta by Ashwini',
   },
-  description: 'Nirlipta by Ashwini Karmbadka. Hatha, Vinyasa & Pranayama for all levels. Bengaluru.',
+  description: 'Nirlipta by Ashwini Karmbadka. Hatha, Vinyasa & Pranayama. Bengaluru.',
   manifest: '/manifest.webmanifest',
   appleWebApp: {
     capable: true,
@@ -15,6 +15,9 @@ export const metadata: Metadata = {
     title: 'Nirlipta',
   },
   formatDetection: { telephone: false },
+}
+
+export const viewport: Viewport = {
   themeColor: [
     { media: '(prefers-color-scheme: dark)', color: '#1C1408' },
     { media: '(prefers-color-scheme: light)', color: '#F5A820' },

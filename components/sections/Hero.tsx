@@ -98,7 +98,7 @@ export default function Hero({
           className="mt-5 font-display italic text-white/50 select-none"
           style={{ ...fadeIn(650), fontSize: 'clamp(1.1rem, 3vw, 1.6rem)' }}
         >
-          {tagline || 'Hatha, Vinyasa & Pranayama — all levels welcome'}
+          {tagline || 'Hatha, Vinyasa & Pranayama'}
         </p>
 
         {/* Divider */}
