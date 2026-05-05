@@ -1,7 +1,7 @@
 import crypto from 'crypto'
 
 const SECRET = process.env.ADMIN_TOKEN_SECRET || process.env.ADMIN_PASSWORD || 'fallback-secret'
-const TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000 // 30 days
+const TOKEN_TTL_MS = 15 * 60 * 1000 // 15 minutes
 
 export function createToken(): string {
   const expiry = Date.now() + TOKEN_TTL_MS
