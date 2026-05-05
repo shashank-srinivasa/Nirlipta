@@ -120,7 +120,7 @@ export default function BookingForm({
       const orderRes = await fetch('/api/payment/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: yoga.price, classId: yoga.id }),
+        body: JSON.stringify({ amount: yoga.price, classId: yoga.id, ...form }),
       })
       const { order, keyId, error } = await orderRes.json()
       if (error) { toast.error(error); setLoading(false); return }

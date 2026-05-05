@@ -4,7 +4,7 @@ import { createServiceClient } from '@/lib/supabase/server'
 
 export async function POST(req: NextRequest) {
   try {
-    const { amount, classId } = await req.json()
+    const { amount, classId, student_name, student_email, student_phone, booking_date, notes } = await req.json()
 
     if (!amount || amount < 100) {
       return NextResponse.json({ error: 'Invalid amount' }, { status: 400 })
@@ -30,7 +30,14 @@ export async function POST(req: NextRequest) {
       amount,
       currency: 'INR',
       receipt: `yoga_${classId}_${Date.now()}`,
-      notes: { class_id: classId },
+      notes: {
+        class_id: classId,
+        student_name: student_name || '',
+        student_email: student_email || '',
+        student_phone: student_phone || '',
+        booking_date: booking_date || '',
+        notes: notes || '',
+      },
     })
 
     return NextResponse.json({ order, keyId })

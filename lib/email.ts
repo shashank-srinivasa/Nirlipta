@@ -26,6 +26,12 @@ function formatAmount(paise: number) {
   return `₹${(paise / 100).toFixed(0)}`
 }
 
+function fromAddress(prefix: 'bookings' | 'contact') {
+  if (process.env.RESEND_FROM_EMAIL) return process.env.RESEND_FROM_EMAIL
+  // onboarding@resend.dev works on Resend free plan without domain verification
+  return 'onboarding@resend.dev'
+}
+
 export async function sendBookingNotification(data: BookingEmailData) {
   const apiKey = process.env.RESEND_API_KEY
   if (!apiKey) {
@@ -34,7 +40,7 @@ export async function sendBookingNotification(data: BookingEmailData) {
   }
 
   const body = {
-    from: 'bookings@nirlipta.duckdns.org',
+    from: fromAddress('bookings'),
     to: data.teacherEmail,
     subject: `New booking: ${data.classTitle} — ${data.studentName}`,
     html: `
@@ -69,7 +75,7 @@ export async function sendBookingNotification(data: BookingEmailData) {
   if (!data.studentEmail) return
   const studioName = data.studioName || 'the studio'
   const studentBody = {
-    from: 'bookings@nirlipta.duckdns.org',
+    from: fromAddress('bookings'),
     to: data.studentEmail,
     subject: `Booking confirmed — ${data.classTitle}`,
     html: `
@@ -105,7 +111,7 @@ export async function sendContactNotification(data: ContactEmailData) {
   }
 
   const body = {
-    from: 'contact@nirlipta.duckdns.org',
+    from: fromAddress('contact'),
     to: data.teacherEmail,
     reply_to: data.fromEmail,
     subject: `New message from ${data.fromName}`,
